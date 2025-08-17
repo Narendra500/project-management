@@ -1,10 +1,11 @@
 import { Link, useRouteLoaderData } from "react-router";
 import { useState } from "react";
+import { useAppContext } from "../contexts/AppContext";
 
 export default function NavBar() {
     const [isMenuActive, setMenuStatus] = useState(false);
-    const userDetails = useRouteLoaderData('protected')
-    const activeProjectId = userDetails?.activeProjectId;
+    const { user } = useAppContext();
+    const activeProjectId = user.activeProjectId;
 
     const toggleMenuState = () => {
         setMenuStatus(!isMenuActive);

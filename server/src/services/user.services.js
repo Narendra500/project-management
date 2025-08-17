@@ -16,8 +16,8 @@ export async function updateUserActiveProject(userId, projectId) {
                 },
             });
 
-            // send false flag to signify failure to update as user isn't part of the project
-            if (!userProject) false;
+            // return null to signify failure to update as user isn't part of the project
+            if (!userProject) null;
         }
 
         const user = await tx.user.update({
@@ -29,7 +29,7 @@ export async function updateUserActiveProject(userId, projectId) {
             },
         });
 
-        return !!user;
+        return user.activeProjectId;
     });
 }
 

@@ -14,28 +14,27 @@ import { PopUpMedium } from "#components/ui/PopUp";
 import EmailVerificationComponent from "#components/auth/EmailVerificationComponent";
 
 import { loader as loadUserProjects } from "#components/homepage/ProjectComponent";
-import { loader as loadUserDetails } from "#components/homepage/ProfileComponent"
-import ProtectedLayout, { loader as protectedLoader } from '#components/layouts/ProtectedLayout';
+import { loader as loadUserDetails } from "./App"
+import ProtectedLayout from '#components/layouts/ProtectedLayout';
 
 const routes = [
     {
         path: "/",
         element: <App />,
+        loader: loadUserDetails,
         errorElement: <ErrorPage />,
         children: [
-            // profile route is now a top-level child (always accessible)
+            // profile route is a top-level child (always accessible) regardless of email verification status
             {
                 path: "profile/me",
                 element: <ProfileComponent />,
-                loader: loadUserDetails,
                 children: [
                     { path: "change-display-name", element: <PopUpMedium>{<forms.ChangeDisplayNameForm />}</PopUpMedium> },
                 ],
             },
-            // protected routes are wrapped protected layout
+            // protected routes are wrapped protected layout not accessible without email verification
             {
                 element: <ProtectedLayout />,
-                loader: protectedLoader,
                 id: 'protected',
                 children: [
                     {

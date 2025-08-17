@@ -7,6 +7,7 @@ import * as projectServices from "#services/projectServices"
 import Input from "#components/ui/Input";
 import TextArea from "#components/ui/TextArea";
 import NavButton from "#components/ui/NavButton";
+import { useAppContext } from "../contexts/AppContext";
 
 
 export function AuthForm() {
@@ -143,6 +144,7 @@ export function AuthForm() {
 
 export function ChangeDisplayNameForm() {
     const [input, setInput] = useState();
+    const { setUser } = useAppContext();
     const [error, setError] = useOutletContext().error;
 
     const navigate = useNavigate();
@@ -161,6 +163,10 @@ export function ChangeDisplayNameForm() {
 
         setError(null);
 
+        setUser(prevUser => ({
+            ...prevUser,
+            displayName: response.data.displayName
+        }))
         navigate("/profile/me");
     };
 

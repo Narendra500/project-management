@@ -1,7 +1,10 @@
 import ActionButton from "#components/ui/ActionButton";
 import { updateActiveProject } from "#services/projectServices";
+import { useAppContext } from "../../contexts/AppContext";
 
-export default function ProjectCard({ children, id, activeProjectId, setActiveProjectId }) {
+export default function ProjectCard({ children, id }) {
+    const { user, setUser } = useAppContext(); // gets user details we are only interested in activeProjectId
+
     const addSpecialClassesForHeaingOrActiveProject = () => {
         let extraClass = "";
         if (children.isHeading) extraClass += "bg-gray-950"
@@ -12,13 +15,16 @@ export default function ProjectCard({ children, id, activeProjectId, setActivePr
 
     const isProjectActive = () => {
         // ensure if is not undefined first
-        return id && id === activeProjectId;
+        return id && id === user.activeProjectId;
     }
 
     const toggleProjectActiveStatus = async () => {
-        const response = await updateActiveProject(id === activeProjectId ? null : id);
+        const response = await updateActiveProject(isProjectActive() ? null : id);
         if (response?.success) {
-            setActiveProjectId(id === activeProjectId ? null : id);
+            setUser(prevUser => ({
+                ...prevUser,
+                activeProjectId: response.data.activeProjectId
+            }))
         }
     }
 
