@@ -1,21 +1,25 @@
 import AuthPage from "#pages/AuthPages";
 import ErrorPage from "#pages/ErrorPage";
-import VerifyEmailPage from "#components/auth/VerifyEmail";
+import VerifyEmailPage from "#pages/VerifyEmailPage";
 import App from "./App";
 
-import ProjectComponent from "#components/homepage/ProjectComponent";
-import KanBhanComponent from "#components/homepage/KanbhanComponent";
-import TreeViewComponent from "#components/homepage/TreeViewComponent";
-import ProfileComponent from "#components/homepage/ProfileComponent";
+import ProjectComponent from "#components/mainContent/ProjectComponent";
+import KanBhanComponent from "#components/mainContent/KanbhanComponent";
+import TreeViewComponent from "#components/mainContent/TreeViewComponent";
+import ProfileComponent from "#components/mainContent/ProfileComponent";
 
-import * as forms from "#components/forms";
+import * as AuthForms from "#components/forms/AuthForms"
+import * as ProjectForms from "#components/forms/ProjectForms"
+import * as UserForms from "#components/forms/UserForms"
 
-import { PopUpMedium } from "#components/ui/PopUp";
+import { PopUpSmall } from "#components/ui/PopUpSmall";
+import { PopUpMedium } from "#components/ui/PopUpMedium";
 import EmailVerificationComponent from "#components/auth/EmailVerificationComponent";
 
-import { loader as loadUserProjects } from "#components/homepage/ProjectComponent";
-import { loader as loadUserDetails } from "./App"
-import ProtectedLayout from '#components/layouts/ProtectedLayout';
+import { loader as loadUserProjects } from "#components/mainContent/ProjectComponent";
+import { loader as loadUserDetails } from "./App.jsx"
+import { loader as loadProjectData } from "#components/mainContent/TreeViewComponent"
+import VerificationProtectedLayout from "#components/layouts/VerificationProtectedLayout";
 
 const routes = [
     {
@@ -24,27 +28,28 @@ const routes = [
         loader: loadUserDetails,
         errorElement: <ErrorPage />,
         children: [
+            // All routes below can't be accessed without logging in
             // profile route is a top-level child (always accessible) regardless of email verification status
             {
                 path: "profile/me",
                 element: <ProfileComponent />,
                 children: [
-                    { path: "change-display-name", element: <PopUpMedium>{<forms.ChangeDisplayNameForm />}</PopUpMedium> },
+                    { path: "change-display-name", element: <PopUpSmall>{<UserForms.ChangeDisplayNameForm />}</PopUpSmall> },
+                    { path: "log-out", element: <PopUpSmall>{<AuthForms.LogOutConfirmation />}</PopUpSmall> }
                 ],
             },
-            // protected routes are wrapped protected layout not accessible without email verification
+            // verification protected routes are wrapped verification protected layout not accessible without email verification
             {
-                element: <ProtectedLayout />,
-                id: 'protected',
+                element: <VerificationProtectedLayout />,
                 children: [
                     {
                         path: "project/user/me",
                         element: <ProjectComponent />,
                         loader: loadUserProjects,
-                        children: [{ path: "create-user-project", element: <PopUpMedium>{<forms.CreateUserProjectForm />}</PopUpMedium> }],
+                        children: [{ path: "create-user-project", element: <PopUpMedium>{<ProjectForms.CreateUserProjectForm />}</PopUpMedium> }],
                     },
                     { path: "kanbhan/:projectId", element: <KanBhanComponent /> },
-                    { path: "tree-view/:projectId", element: <TreeViewComponent /> },
+                    { path: "tree-view/:projectId", element: <TreeViewComponent />, loader: loadProjectData },
                 ]
             }
         ],
@@ -53,15 +58,15 @@ const routes = [
         path: "auth",
         element: <AuthPage />,
         children: [
-            { path: "login", element: <forms.AuthForm /> },
-            { path: "register", element: <forms.AuthForm /> },
+            { path: "login", element: <AuthForms.AuthForm /> },
+            { path: "register", element: <AuthForms.AuthForm /> },
             { path: "get-email-verification-link/me", element: <EmailVerificationComponent /> }
         ],
     },
     {
-        path: "/verify-email/:token",
+        path: "verify-email/:token",
         element: <VerifyEmailPage />,
-    }
+    },
 ];
 
 export default routes;

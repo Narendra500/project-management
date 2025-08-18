@@ -47,3 +47,12 @@ export async function register(userName, password) {
         return err.response.data || "Sign up failed";
     }
 }
+
+export async function logout() {
+    try {
+        const response = await apiClient.post("auth/logout");
+        return response.data;
+    } catch (err) {
+        return err.response.data || "Log out failed";
+    }
+}

@@ -6,7 +6,8 @@
             "#assets/*": ["src/assets/*"],
             "#pages/*": ["src/pages/*"],
             "#constants/*": ["src/constants/*"],
-            "#services/*": ["src/services/*"]
+            "#services/*": ["src/services/*"],
+            "#contexts/*": ["src/contexts/*"]
         }
     }
 } // prettier.config.js

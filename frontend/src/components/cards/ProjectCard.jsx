@@ -1,6 +1,6 @@
 import ActionButton from "#components/ui/ActionButton";
 import { updateActiveProject } from "#services/projectServices";
-import { useAppContext } from "../../contexts/AppContext";
+import { useAppContext } from "#contexts/AppContext";
 
 export default function ProjectCard({ children, id }) {
     const { user, setUser } = useAppContext(); // gets user details we are only interested in activeProjectId

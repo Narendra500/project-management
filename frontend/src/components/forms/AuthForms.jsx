@@ -1,16 +1,9 @@
 import * as authServices from "#services/authServices";
-import * as profileServices from "#services/profileServices";
-import { Form, Link, useLocation, useNavigate, useRouteLoaderData, Navigate } from "react-router";
+import { Form, Link, useLocation, useNavigate } from "react-router";
 import { useState } from "react";
 import getProjectName from "#constants/projectName";
-import * as projectServices from "#services/projectServices"
 import Input from "#components/ui/Input";
-import TextArea from "#components/ui/TextArea";
-import NavButton from "#components/ui/NavButton";
-import { useAppContext } from "#contexts/AppContext";
-import { useProjectsContext } from "#contexts/ProjectsContext";
-import ActionButton from "./ui/ActionButton";
-
+import ActionButton from "#components/ui/ActionButton";
 
 export function AuthForm() {
     const [input, setInput] = useState({ username: "", password: "" });
@@ -141,80 +134,6 @@ export function AuthForm() {
                 </Link>
             </div>
         </div>
-    );
-}
-
-export function ChangeDisplayNameForm() {
-    const [input, setInput] = useState();
-    const { setUser } = useAppContext();
-    const [error, setError] = useState(null);
-
-    const navigate = useNavigate();
-
-    const handleSubmit = async () => {
-        if (input.length > 64) {
-            setError("Can't have username longer than 64 characters!");
-            return;
-        }
-
-        const response = await profileServices.changeDisplayName(input);
-        if (!response.success) {
-            setError(response.message);
-            return;
-        }
-
-        setError(null);
-
-        setUser(prevUser => ({
-            ...prevUser,
-            displayName: response.data.displayName
-        }))
-        navigate("/profile/me");
-    };
-
-    const handleInput = (e) => {
-        setInput(e.target.value);
-    };
-
-    return (
-        <Form onSubmit={handleSubmit} className="flex h-full w-full flex-col items-center justify-center">
-            <Input onChange={handleInput} placeholder={"New Display Name"} cssClasses="w-2/3" isRequired={true} />
-            <NavButton type={"submit"} buttonText={"Confirm"} cssClasses="w-1/2 mt-10 px-6 py-3" />
-        </Form>
-    );
-}
-
-
-export function CreateUserProjectForm() {
-    const [input, setInput] = useState({
-        projectName: "",
-        projectDescription: ""
-    });
-    const { projects, setProjects } = useProjectsContext();
-    const navigate = useNavigate();
-
-    const handleInput = (e) => {
-        const { name, value } = e.target;
-        setInput((prev) => ({
-            ...prev,
-            [name]: value
-        }))
-    }
-
-    const handleSubmit = async () => {
-        const response = await projectServices.createUserProject(input.projectName, input.projectDescription);
-        projects.push(response.data);
-        setProjects(projects);
-
-        navigate("/project/user/me");
-    };
-
-    return (
-        <Form onSubmit={handleSubmit} className="flex w-full h-full flex-col items-center justify-center">
-            <Input name="projectName" onChange={handleInput} placeholder="Project name" isRequired={true} />
-            <TextArea name="projectDescription" onChange={handleInput} placeholder="Project description" cssClasses="h-8/12" />
-            <NavButton type={"submit"} buttonText={"Confirm"} extraClasses="w-8/12" />
-        </Form >
     );
 }
 

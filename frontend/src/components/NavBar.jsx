@@ -1,6 +1,6 @@
-import { Link, useRouteLoaderData } from "react-router";
+import { Link } from "react-router";
 import { useState } from "react";
-import { useAppContext } from "../contexts/AppContext";
+import { useAppContext } from "#contexts/AppContext";
 
 export default function NavBar() {
     const [isMenuActive, setMenuStatus] = useState(false);

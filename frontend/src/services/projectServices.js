@@ -33,3 +33,12 @@ export async function updateActiveProject(projectId) {
         return err.response.data || "Couldn't set the project as active";
     }
 }
+
+export async function getProjectData(projectId) {
+    try {
+        const response = await apiClient.get(`/project/${projectId}`);
+        return response.data;
+    } catch (err) {
+        return err.response.data || "Couldn't fetch project data";
+    }
+}
