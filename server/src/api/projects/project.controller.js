@@ -43,3 +43,12 @@ export async function getUserProjects(req, res) {
         ),
     );
 }
+
+export async function getAllProjectCategoriesAndFeatures(req, res) {
+    const userId = req.userId;
+    const projectId = sqids.decode(req.params.projectId)[0];
+
+    const projectData = await projectServices.getAllProjectCategoriesAndFeatures(projectId, userId);
+
+    res.status(HTTP_RESPONSE_CODE.SUCCESS).json(new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS, { projectData }));
+}

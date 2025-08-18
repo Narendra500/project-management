@@ -29,7 +29,7 @@ export async function updateUserActiveProject(userId, projectId) {
             },
         });
 
-        return user.activeProjectId;
+        return user;
     });
 }
 

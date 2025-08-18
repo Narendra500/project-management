@@ -86,6 +86,21 @@ export async function login(req, res) {
         .json(new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS, { displayName: user.displayName }, "User logged in successfuly"));
 }
 
+export async function logout(req, res) {
+    // must pass the same options (path, domain) that were used to set the cookie.
+    // Since we only used the defaults, we just need httpOnly, secure, and sameSite.
+    const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+    };
+
+    // clearCookie method handles the expiration logic
+    res.clearCookie("jwt_token", cookieOptions)
+        .status(HTTP_RESPONSE_CODE.SUCCESS)
+        .json(new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS, {}, "User logged out successfully"));
+}
+
 export async function sendLinkForEmailVerification(req, res) {
     const userId = req.userId;
 

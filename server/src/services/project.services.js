@@ -1,5 +1,49 @@
 import prisma from "#config/prisma.client";
 
+export async function getAllProjectCategoriesAndFeatures(projectId, userId) {
+    return await prisma.project.findUnique({
+        where: {
+            id: projectId,
+            projectUsers: {
+                some: {
+                    userId: userId,
+                },
+            },
+        },
+        select: {
+            name: true,
+            description: true,
+            categories: {
+                select: {
+                    name: true,
+                    description: true,
+                    colorCode: true,
+                    parentId: true,
+                    feature: {
+                        select: {
+                            name: true,
+                            parentId: true,
+                            categoryId: true,
+                        },
+                    },
+                },
+            },
+        },
+        // include: {
+        //     categories: {
+        //         include: {
+        //             children: true,
+        //             feature: {
+        //                 include: {
+        //                     children: true,
+        //                 },
+        //             },
+        //         },
+        //     },
+        // },
+    });
+}
+
 export async function checkProjectExistsForUser(projectName, userId) {
     const existingProject = await prisma.project.findFirst({
         where: {

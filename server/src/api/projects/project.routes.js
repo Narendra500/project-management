@@ -5,5 +5,6 @@ const router = Router();
 
 router.post("/create", projectController.createProject);
 router.get("/user/me", projectController.getUserProjects);
+router.get("/:projectId", projectController.getAllProjectCategoriesAndFeatures);
 
 export default router;

@@ -45,13 +45,18 @@ export async function updateUserActiveProject(req, res) {
     let { projectId } = req.body;
     if (projectId) [projectId] = sqids.decode(projectId);
 
-    const newActiveproject = await userServices.updateUserActiveProject(userId, projectId);
-    if (!newActiveproject) throw new ApiError(HTTP_RESPONSE_CODE.UNAUTHORIZED, "User not authorized to access this project");
+    const userWithUpdatedProjectId = await userServices.updateUserActiveProject(userId, projectId);
+    if (!userWithUpdatedProjectId)
+        throw new ApiError(HTTP_RESPONSE_CODE.UNAUTHORIZED, "User not authorized to access this project");
 
     res.status(HTTP_RESPONSE_CODE.SUCCESS).json(
         new ApiResponse(
             HTTP_RESPONSE_CODE.SUCCESS,
-            { activeProjectId: sqids.encode([newActiveproject]) },
+            {
+                activeProjectId: userWithUpdatedProjectId.activeProjectId
+                    ? sqids.encode([userWithUpdatedProjectId.activeProjectId])
+                    : null,
+            },
             "User active project updated",
         ),
     );
