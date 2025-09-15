@@ -110,7 +110,7 @@ export function AuthForm() {
                 </button>
                 {/* remember me checkbox */}
                 <div className="ml-auto mr-24">
-                    <input type="checkbox" id="rememberMe" name="rememberMe" onClick={handleInput} className="w-5 h-5 mr-2" />
+                    <input type="checkbox" id="rememberMe" name="rememberMe" onClick={handleInput} className="w-4 h-4 mr-2" />
                     <label htmlFor="rememberMe" className="text-xl">Remember me</label>
                 </div>
                 {/* login or create acccount button depending on type of auth*/}
@@ -144,8 +144,8 @@ export function LogOutConfirmation() {
         if (response.success) navigate('/auth/login')
     }
     return (
-        <div className="flex w-full h-full flex-col items-center justify-center">
-            <div className="text-4xl">Are you sure you want to log out?</div>
+        <div className="flex w-full h-full flex-col items-center justify-evenly">
+            <div className="text-4xl text-center">Are you sure you want to log out?</div>
             <ActionButton action={handleLogout} buttonText="Confirm" />
         </div>
     )

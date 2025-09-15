@@ -2,9 +2,9 @@ import { Form, useNavigate } from "react-router";
 import { useState } from "react";
 import * as projectServices from "#services/projectServices"
 import Input from "#components/ui/Input";
-import TextArea from "#components/ui/TextArea";
 import NavButton from "#components/ui/NavButton";
 import { useProjectsContext } from "#contexts/ProjectsContext";
+import LongInput from "#components/ui/LongInput";
 
 export function CreateUserProjectForm() {
     const [input, setInput] = useState({
@@ -24,6 +24,9 @@ export function CreateUserProjectForm() {
 
     const handleSubmit = async () => {
         const response = await projectServices.createUserProject(input.projectName, input.projectDescription);
+
+        localStorage.setItem(`project-${response.data.id}-expansionState`, "{}");
+
         projects.push(response.data);
         setProjects(projects);
 
@@ -33,7 +36,7 @@ export function CreateUserProjectForm() {
     return (
         <Form onSubmit={handleSubmit} className="flex w-full h-full flex-col items-center justify-center">
             <Input name="projectName" onChange={handleInput} placeholder="Project name" isRequired={true} />
-            <TextArea name="projectDescription" onChange={handleInput} placeholder="Project description" cssClasses="h-8/12" />
+            <LongInput name="projectDescription" onChange={handleInput} placeholder="Project description" cssClasses="h-8/12" />
             <NavButton type={"submit"} buttonText={"Confirm"} extraClasses="w-8/12" />
         </Form >
     );

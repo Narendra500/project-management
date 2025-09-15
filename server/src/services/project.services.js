@@ -11,16 +11,17 @@ export async function getAllProjectCategoriesAndFeatures(projectId, userId) {
             },
         },
         select: {
+            id: true,
             name: true,
-            description: true,
             categories: {
                 select: {
+                    id: true,
                     name: true,
-                    description: true,
-                    colorCode: true,
+                    color: true,
                     parentId: true,
-                    feature: {
+                    features: {
                         select: {
+                            id: true,
                             name: true,
                             parentId: true,
                             categoryId: true,
@@ -29,18 +30,6 @@ export async function getAllProjectCategoriesAndFeatures(projectId, userId) {
                 },
             },
         },
-        // include: {
-        //     categories: {
-        //         include: {
-        //             children: true,
-        //             feature: {
-        //                 include: {
-        //                     children: true,
-        //                 },
-        //             },
-        //         },
-        //     },
-        // },
     });
 }
 

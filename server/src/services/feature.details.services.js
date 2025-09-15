@@ -8,3 +8,28 @@ export async function updateFeatureDetails(featureId, updateData) {
         data: updateData,
     });
 }
+
+export async function getFeatureDetailsById(featureId, categoryId) {
+    return await prisma.feature.findUnique({
+        where: {
+            id: featureId,
+            categoryId: categoryId,
+        },
+        include: {
+            featureDetails: {
+                select: {
+                    description: true,
+                    gitBranch: true,
+                    assignee: {
+                        select: {
+                            displayName: true,
+                        },
+                    },
+                    dueDate: true,
+                    status: true,
+                    acceptanceCriteria: true,
+                },
+            },
+        },
+    });
+}

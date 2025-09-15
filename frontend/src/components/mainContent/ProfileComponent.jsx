@@ -1,22 +1,21 @@
-import { Outlet } from "react-router";
+import { Outlet, useNavigate } from "react-router";
 import NavButton from "#components/ui/NavButton";
-import { useState } from "react";
 import { useAppContext } from "#contexts/AppContext";
 
-const numberOfProjects = 0;
-
-export function getUserDetailsLeftSection(displayName, isVerified) {
+export function getUserDetailsLeftSection(displayName, isVerified, navigate) {
     return (
         <section className="h-128 mt-12 ml-[5%] lg:ml-24 flex flex-col items-center lg:h-10/12 w-11/12 lg:w-6/12 border-1 border-gray-700 rounded-3xl">
+            <div className="w-full flex flex-row justify-end">
+                <button onClick={() => navigate("log-out")}
+                    className="text-md md:text-xl text-gray-300 font-bold border-2 border-gray-700 hover:border-gray-500 rounded-full px-6 py-2 mt-5 mr-5 hover:cursor-pointer"
+                >
+                    Log Out
+                </button>
+            </div>
             <div className="my-10 text-4xl md:text-5xl lg:text-6xl font-serif">{displayName}</div>
             <NavButton
                 navigateTo="change-display-name"
                 buttonText="Change Display Name"
-                extraClasses=""
-            />
-            <NavButton
-                navigateTo="log-out"
-                buttonText="Log out"
                 extraClasses=""
             />
             {!isVerified && <div className="px-5 flex flex-col items-center mt-16 text-xl lg:text-3xl">
@@ -43,11 +42,12 @@ export function getUserDetailsRightSection() {
 
 export default function ProfileComponent() {
     const { user } = useAppContext();
+    const navigate = useNavigate();
 
     return (
         <div className="h-full flex flex-col">
             <div className="grow scroller">
-                {getUserDetailsLeftSection(user.displayName, user.isVerified)}
+                {getUserDetailsLeftSection(user.displayName, user.isVerified, navigate)}
                 {getUserDetailsRightSection()}
             </div>
             <Outlet />

@@ -7,7 +7,7 @@ const ProjectsContext = createContext(null);
 export function useProjectsContext() {
     const context = useContext(ProjectsContext);
     if (!context) {
-        throw new Error('useProjectsContext must be used within an ProjectsProvider');
+        throw new Error('useProjectsContext must be used with a ProjectsProvider');
     }
     return context;
 }

@@ -42,3 +42,12 @@ export async function getProjectData(projectId) {
         return err.response.data || "Couldn't fetch project data";
     }
 }
+
+export async function getProjectUsers(projectId) {
+    try {
+        const response = await apiClient.get(`/projectUsers/${projectId}`);
+        return response.data;
+    } catch (err) {
+        return err.response.data || "Couldn't fetch project users";
+    }
+}

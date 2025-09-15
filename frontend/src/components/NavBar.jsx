@@ -55,7 +55,7 @@ export default function NavBar() {
                 className={`${isMenuActive ? "block" : "hidden"} bg-gray-900 absolute h-74 translate-x-full translate-y-20 w-1/2 rounded-xl border-2 border-purple-200 md:hidden`
                 }
             >
-                <Link to="project/byUserId/me" className={navClassMenu}>
+                <Link to="project/user/me" className={navClassMenu}>
                     Projects
                 </Link >
                 <Link to={`tree-view/${activeProjectId}`} className={navClassMenu}>

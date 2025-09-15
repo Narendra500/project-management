@@ -18,10 +18,8 @@ export default function ProjectsComponenet() {
     const projectsLoaded = useLoaderData(); // gets all user project
     const [projects, setProjects] = useState(projectsLoaded); // sets the list of project as a state so anychanges to the list will trigger rerender
 
-    const contextValue = useMemo(() => ({ projects, setProjects }), [projects])
-
     return (
-        <ProjectsContext.Provider value={contextValue} >
+        <ProjectsContext.Provider value={{ projects, setProjects }} >
             <div className="h-full flex flex-col">
                 {/* heading */}
                 <div className="shrink-0 h-16 sm:h-36 flex mt-6 sm:mt-0 w-full justify-center items-center border-b-1 border-b-gray-700 py-[2%]">

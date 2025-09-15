@@ -8,17 +8,23 @@ import KanBhanComponent from "#components/mainContent/KanbhanComponent";
 import TreeViewComponent from "#components/mainContent/TreeViewComponent";
 import ProfileComponent from "#components/mainContent/ProfileComponent";
 
-import * as AuthForms from "#components/forms/AuthForms"
-import * as ProjectForms from "#components/forms/ProjectForms"
-import * as UserForms from "#components/forms/UserForms"
+import * as AuthForms from "#components/forms/AuthForms";
+import * as ProjectForms from "#components/forms/ProjectForms";
+import * as UserForms from "#components/forms/UserForms";
+import * as TreeForms from "#components/forms/TreeForms";
 
 import { PopUpSmall } from "#components/ui/PopUpSmall";
 import { PopUpMedium } from "#components/ui/PopUpMedium";
 import EmailVerificationComponent from "#components/auth/EmailVerificationComponent";
+import CategoryDetails from "#components/nodeDetails/CategoryDetails";
+import FeatureDetails from "#components/nodeDetails/FeatureDetails";
 
 import { loader as loadUserProjects } from "#components/mainContent/ProjectComponent";
-import { loader as loadUserDetails } from "./App.jsx"
-import { loader as loadProjectData } from "#components/mainContent/TreeViewComponent"
+import { loader as loadUserDetails } from "./App.jsx";
+import { loader as loadProjectData } from "#components/mainContent/TreeViewComponent";
+import { loader as loadProjectUsers } from "./loaders/loadProjectUsers";
+import { loader as loadCategoryDetails } from "./loaders/loadCategoryDetails";
+import { loader as loadFeatureDetails } from "./loaders/loadFeatureDetails";
 import VerificationProtectedLayout from "#components/layouts/VerificationProtectedLayout";
 
 const routes = [
@@ -49,7 +55,32 @@ const routes = [
                         children: [{ path: "create-user-project", element: <PopUpMedium>{<ProjectForms.CreateUserProjectForm />}</PopUpMedium> }],
                     },
                     { path: "kanbhan/:projectId", element: <KanBhanComponent /> },
-                    { path: "tree-view/:projectId", element: <TreeViewComponent />, loader: loadProjectData },
+                    {
+                        path: "tree-view/:projectId",
+                        element: <TreeViewComponent />,
+                        loader: loadProjectData,
+                        children: [
+                            {
+                                path: "node/:nodeId/view-category-details",
+                                element: <PopUpMedium><CategoryDetails /></PopUpMedium>,
+                                loader: loadCategoryDetails,
+                            },
+                            {
+                                path: "node/:categoryId/:nodeId/view-feature-details",
+                                element: <PopUpMedium><FeatureDetails /></PopUpMedium>,
+                                loader: loadFeatureDetails
+                            },
+                            {
+                                path: "node/:nodeId/add-new-category",
+                                element: <PopUpMedium><TreeForms.CreateCategory /></PopUpMedium>,
+                            },
+                            {
+                                path: "node/:nodeId/add-new-feature",
+                                element: <PopUpMedium><TreeForms.CreateFeature /></PopUpMedium>,
+                                loader: loadProjectUsers
+                            },
+                        ]
+                    },
                 ]
             }
         ],

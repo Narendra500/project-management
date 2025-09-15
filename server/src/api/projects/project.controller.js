@@ -49,6 +49,18 @@ export async function getAllProjectCategoriesAndFeatures(req, res) {
     const projectId = sqids.decode(req.params.projectId)[0];
 
     const projectData = await projectServices.getAllProjectCategoriesAndFeatures(projectId, userId);
+    if (!projectData) throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "project with given id doesn't exist for user");
+
+    projectData.id = sqids.encode([projectData.id]);
+    for (const category of projectData?.categories) {
+        category.id = sqids.encode([category.id]);
+        if (category.parentId) category.parentId = sqids.encode([category.parentId]);
+
+        for (const feature of category?.features) {
+            feature.id = sqids.encode([feature.id]);
+            if (feature.parentId) feature.parentId = sqids.encode([feature.parentId]);
+        }
+    }
 
     res.status(HTTP_RESPONSE_CODE.SUCCESS).json(new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS, { projectData }));
 }

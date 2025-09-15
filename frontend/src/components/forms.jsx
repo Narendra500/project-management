@@ -5,7 +5,7 @@ import { useState } from "react";
 import getProjectName from "#constants/projectName";
 import * as projectServices from "#services/projectServices"
 import Input from "#components/ui/Input";
-import TextArea from "#components/ui/TextArea";
+import LongInput from "#components/ui/LongInput";
 import NavButton from "#components/ui/NavButton";
 import { useAppContext } from "#contexts/AppContext";
 import { useProjectsContext } from "#contexts/ProjectsContext";
@@ -212,7 +212,7 @@ export function CreateUserProjectForm() {
     return (
         <Form onSubmit={handleSubmit} className="flex w-full h-full flex-col items-center justify-center">
             <Input name="projectName" onChange={handleInput} placeholder="Project name" isRequired={true} />
-            <TextArea name="projectDescription" onChange={handleInput} placeholder="Project description" cssClasses="h-8/12" />
+            <LongInput name="projectDescription" onChange={handleInput} placeholder="Project description" cssClasses="h-8/12" />
             <NavButton type={"submit"} buttonText={"Confirm"} extraClasses="w-8/12" />
         </Form >
     );

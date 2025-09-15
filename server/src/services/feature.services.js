@@ -11,7 +11,16 @@ export async function checkFeatureExistsForCategory(featureName, categoryId) {
     return !!featureExists;
 }
 
-export async function createFeature(featureName, categoryId, featureParentId) {
+export async function createFeature(
+    featureName,
+    featureGitBranch,
+    featureAssigneeId,
+    featureDueDate,
+    featureDescription,
+    featureAcceptanceCriteria,
+    categoryId,
+    featureParentId,
+) {
     return await prisma.$transaction(async (tx) => {
         const feature = await tx.feature.create({
             data: {
@@ -24,9 +33,35 @@ export async function createFeature(featureName, categoryId, featureParentId) {
         await tx.featureDetail.create({
             data: {
                 featureId: feature.id,
+                description: featureDescription,
+                gitBranch: featureGitBranch,
+                assigneeId: featureAssigneeId || null,
+                dueDate: featureDueDate || null,
+                acceptanceCriteria: featureAcceptanceCriteria,
             },
         });
 
         return feature;
+    });
+}
+
+export async function getFeatureDetailsById(featureId, categoryId) {
+    return await prisma.feature.findUnique({
+        where: {
+            featureId: featureId,
+            categoryId: categoryId,
+        },
+        include: {
+            featureDetails: {
+                select: {
+                    description: true,
+                    gitBranch: true,
+                    assignee: true,
+                    dueDate: true,
+                    status: true,
+                    acceptanceCriteria: true,
+                },
+            },
+        },
     });
 }

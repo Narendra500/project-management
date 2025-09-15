@@ -1,6 +1,6 @@
 import prisma from "#config/prisma.client";
 
-export async function getProjectCategoryByName(categoryName, projectId) {
+export async function checkCategoryExists(categoryName, projectId) {
     const existingCategory = await prisma.category.findFirst({
         where: {
             name: categoryName,
@@ -11,14 +11,25 @@ export async function getProjectCategoryByName(categoryName, projectId) {
     return !!existingCategory;
 }
 
+export async function checkSubCategoryExists(categoryName, categoryParentId) {
+    const existingCategory = await prisma.category.findFirst({
+        where: {
+            name: categoryName,
+            parentId: categoryParentId,
+        },
+    });
+
+    return !!existingCategory;
+}
+
 // prettier-ignore
-export async function createCategory(projectId, categoryName, categoryDescription, categoryColorCode, categoryParentId) {
+export async function createCategory(projectId, categoryName, categoryDescription, categoryColor, categoryParentId) {
     return await prisma.category.create({
         data: {
             projectId: projectId,
             name: categoryName,
             description: categoryDescription,
-            colorCode: categoryColorCode,
+            color: categoryColor,
             parentId: categoryParentId
         }
     })
@@ -47,5 +58,14 @@ export async function canUserCreateCategory(userId, projectId) {
         if (!userRole.writePermission) return false;
 
         return true;
+    });
+}
+
+export async function getCategoryById(projectId, categoryId) {
+    return prisma.category.findUnique({
+        where: {
+            id: categoryId,
+            projectId: projectId,
+        },
     });
 }

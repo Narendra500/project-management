@@ -72,7 +72,7 @@ model Category {
     id          Int        @id @default(autoincrement()) @map("category_id")
     name        String     @map("category_name") @db.VarChar(128)
     description String?    @map("category_description")
-    colorCode   String     @map("category_color_code") @db.VarChar(10)
+    color       String     @map("category_color") @db.VarChar(32)
     parentId    Int?       @map("category_parent_id")
     isDeleted   Boolean    @default(false) @map("is_deleted")
     deletedAt   DateTime?  @map("deleted_at") @db.Timestamp(6)
@@ -82,25 +82,25 @@ model Category {
     parent      Category?  @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
     children    Category[] @relation("CategoryToCategory")
     project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-    feature     Feature[]
+    features    Feature[]
 
     @@index([parentId], map: "idx_category_parent_id")
     @@map("categories")
 }
 
 model Feature {
-    id              Int            @id @default(autoincrement()) @map("feature_id")
-    name            String         @map("feature_name") @db.VarChar(128)
-    parentId        Int?           @map("feature_parent_id")
-    isDeleted       Boolean        @default(false) @map("is_deleted")
-    deletedAt       DateTime?      @map("deleted_at") @db.Timestamp(6)
-    createdAt       DateTime?      @default(now()) @map("created_at") @db.Timestamp(6)
-    updatedAt       DateTime?      @updatedAt @map("updated_at") @db.Timestamp(6)
-    categoryId      Int            @map("category_id")
-    feature_details FeatureDetail?
-    category        Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-    parent          Feature?       @relation("FeatureToFeature", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-    children        Feature[]      @relation("FeatureToFeature")
+    id             Int            @id @default(autoincrement()) @map("feature_id")
+    name           String         @map("feature_name") @db.VarChar(128)
+    parentId       Int?           @map("feature_parent_id")
+    isDeleted      Boolean        @default(false) @map("is_deleted")
+    deletedAt      DateTime?      @map("deleted_at") @db.Timestamp(6)
+    createdAt      DateTime?      @default(now()) @map("created_at") @db.Timestamp(6)
+    updatedAt      DateTime?      @updatedAt @map("updated_at") @db.Timestamp(6)
+    categoryId     Int            @map("category_id")
+    featureDetails FeatureDetail?
+    category       Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+    parent         Feature?       @relation("FeatureToFeature", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+    children       Feature[]      @relation("FeatureToFeature")
 
     @@index([parentId], map: "idx_feature_parent_id")
     @@map("features")
