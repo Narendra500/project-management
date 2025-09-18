@@ -42,6 +42,20 @@ html, body, #root {
            hover:cursor-pointer hover:bg-gradient-to-r from-purple-600 via-purple-500 to-red-400;
 }
 
+.button-delete {
+    @apply flex items-center text-white h-12 justify-center border-2 border-red-500 px-4 py-2 mt-4 md:px-6 md:py-3 
+           font-bold rounded-md
+           hover:cursor-pointer hover:bg-red-500;
+}
+
+.input {
+    @apply mb-5 w-[96%] rounded bg-gray-700 p-3 font-mono md:w-[90%]
+}
+
+.input-delete {
+    @apply mb-5 w-[96%] rounded bg-gray-700 p-3 font-mono md:w-[90%]
+}
+
 body {
     @apply w-screen overflow-hidden;
 }

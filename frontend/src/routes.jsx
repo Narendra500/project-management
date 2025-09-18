@@ -25,6 +25,7 @@ import { loader as loadProjectData } from "#components/mainContent/TreeViewCompo
 import { loader as loadProjectUsers } from "./loaders/loadProjectUsers";
 import { loader as loadCategoryDetails } from "./loaders/loadCategoryDetails";
 import { loader as loadFeatureDetails } from "./loaders/loadFeatureDetails";
+import RecycleBin, { loader as loadSoftDeletedNodes } from "#components/mainContent/RecycleBin";
 import VerificationProtectedLayout from "#components/layouts/VerificationProtectedLayout";
 
 const routes = [
@@ -55,6 +56,7 @@ const routes = [
                         children: [{ path: "create-user-project", element: <PopUpMedium>{<ProjectForms.CreateUserProjectForm />}</PopUpMedium> }],
                     },
                     { path: "kanbhan/:projectId", element: <KanBhanComponent /> },
+                    { path: "recycle-bin/:projectId", element: <RecycleBin />, loader: loadSoftDeletedNodes },
                     {
                         path: "tree-view/:projectId",
                         element: <TreeViewComponent />,

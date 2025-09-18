@@ -113,7 +113,7 @@ export default function TreeViewComponent() {
     return (
         <TreeContext.Provider value={[treeData, setTreeData]}>
             <Outlet />
-            <div className="h-full scroller-x-slim scroller-slim bg-gray-950 text-gray-400 pl-6 pt-6">
+            <div className="h-full scroller-x-slim scroller-slim bg-gray-950 text-gray-400 pl-6 py-6">
                 <TreeNodeComponent node={treeData.projectNode} updateNode={updateNode} navigate={navigate} />
             </div>
         </TreeContext.Provider>

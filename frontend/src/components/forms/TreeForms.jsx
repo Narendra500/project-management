@@ -161,11 +161,15 @@ export function CreateFeature() {
     }
 
     const handleSubmit = async () => {
+        let dueDateISO8601Format = "";
+        if (input.dueDate) {
+            dueDateISO8601Format = new Date(input.dueDate).toISOString();
+        }
         const response = await createFeature(
             input.name,
             input.gitBranch,
             input.assignee,
-            input.dueDate,
+            dueDateISO8601Format,
             input.description,
             input.acceptanceCriteria,
             parNodeId === categoryId ? null : parNodeId,
@@ -267,7 +271,7 @@ export function CreateFeature() {
 
                 {/* acceptance criteria */}
                 <label htmlFor="acceptanceCriteria" className="text-xl text-gray-400 block">Feature acceptance-criteria:</label>
-                <LongInput type="text" id="acceptanceCriteria" name="acceptanceCritera" placeholder="" onChange={handleInput} />
+                <LongInput type="text" id="acceptanceCriteria" name="acceptanceCriteria" placeholder="" onChange={handleInput} />
 
                 {/* submit */}
                 <button type="submit" className="button md:-translate-x-12 text-xl w-80 h-10 mx-auto">Submit</button>

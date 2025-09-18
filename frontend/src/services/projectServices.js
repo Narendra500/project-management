@@ -51,3 +51,12 @@ export async function getProjectUsers(projectId) {
         return err.response.data || "Couldn't fetch project users";
     }
 }
+
+export async function getAllSoftDeletedProjectNodes(projectId) {
+    try {
+        const response = await apiClient.get(`/project/soft-deleted-nodes/${projectId}`);
+        return response.data;
+    } catch (err) {
+        return err.response.data || "Couldn't fetch recycled nodes";
+    }
+}

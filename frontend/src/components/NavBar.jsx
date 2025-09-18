@@ -36,6 +36,9 @@ export default function NavBar() {
                     {isMenuActive ? "Hide Menu" : "Show Menu"}
                 </button>
                 {/* navigation links */}
+                <Link to={`recycle-bin/${activeProjectId}`} className={navClass}>
+                    Recycle bin
+                </Link>
                 <Link to="project/user/me" className={navClass}>
                     Projects
                 </Link>
@@ -55,6 +58,9 @@ export default function NavBar() {
                 className={`${isMenuActive ? "block" : "hidden"} bg-gray-900 absolute h-74 translate-x-full translate-y-20 w-1/2 rounded-xl border-2 border-purple-200 md:hidden`
                 }
             >
+                <Link to={`recycle-bin/${activeProjectId}`} className={navClass}>
+                    Recycle bin
+                </Link>
                 <Link to="project/user/me" className={navClassMenu}>
                     Projects
                 </Link >
