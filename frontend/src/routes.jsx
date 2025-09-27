@@ -55,29 +55,29 @@ const routes = [
                         loader: loadUserProjects,
                         children: [{ path: "create-user-project", element: <PopUpMedium>{<ProjectForms.CreateUserProjectForm />}</PopUpMedium> }],
                     },
-                    { path: "kanbhan/:projectId", element: <KanBhanComponent /> },
-                    { path: "recycle-bin/:projectId", element: <RecycleBin />, loader: loadSoftDeletedNodes },
+                    { path: "kanbhan/:projectUuid", element: <KanBhanComponent /> },
+                    { path: "recycle-bin/:projectUuid", element: <RecycleBin />, loader: loadSoftDeletedNodes },
                     {
-                        path: "tree-view/:projectId",
+                        path: "tree-view/:projectUuid",
                         element: <TreeViewComponent />,
                         loader: loadProjectData,
                         children: [
                             {
-                                path: "node/:nodeId/view-category-details",
+                                path: "node/:nodeUuid/view-category-details",
                                 element: <PopUpMedium><CategoryDetails /></PopUpMedium>,
                                 loader: loadCategoryDetails,
                             },
                             {
-                                path: "node/:categoryId/:nodeId/view-feature-details",
+                                path: "node/:categoryUuid/:nodeUuid/view-feature-details",
                                 element: <PopUpMedium><FeatureDetails /></PopUpMedium>,
                                 loader: loadFeatureDetails
                             },
                             {
-                                path: "node/:nodeId/add-new-category",
+                                path: "node/:nodeUuid/add-new-category",
                                 element: <PopUpMedium><TreeForms.CreateCategory /></PopUpMedium>,
                             },
                             {
-                                path: "node/:nodeId/add-new-feature",
+                                path: "node/:nodeUuid/add-new-feature",
                                 element: <PopUpMedium><TreeForms.CreateFeature /></PopUpMedium>,
                                 loader: loadProjectUsers
                             },

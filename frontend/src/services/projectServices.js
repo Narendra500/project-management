@@ -22,10 +22,10 @@ export async function getUserProjects() {
     }
 }
 
-export async function updateActiveProject(projectId) {
+export async function updateActiveProject(projectUuid) {
     try {
         const response = await apiClient.patch("/user/me/updateUserActiveProject", {
-            projectId: projectId,
+            projectUuid: projectUuid,
         });
 
         return response.data;
@@ -34,27 +34,27 @@ export async function updateActiveProject(projectId) {
     }
 }
 
-export async function getProjectData(projectId) {
+export async function getProjectData(projectUuid) {
     try {
-        const response = await apiClient.get(`/project/${projectId}`);
+        const response = await apiClient.get(`/project/${projectUuid}`);
         return response.data;
     } catch (err) {
         return err.response.data || "Couldn't fetch project data";
     }
 }
 
-export async function getProjectUsers(projectId) {
+export async function getProjectUsers(projectUuid) {
     try {
-        const response = await apiClient.get(`/projectUsers/${projectId}`);
+        const response = await apiClient.get(`/projectUsers/${projectUuid}`);
         return response.data;
     } catch (err) {
         return err.response.data || "Couldn't fetch project users";
     }
 }
 
-export async function getAllSoftDeletedProjectNodes(projectId) {
+export async function getAllSoftDeletedProjectNodes(projectUuid) {
     try {
-        const response = await apiClient.get(`/project/soft-deleted-nodes/${projectId}`);
+        const response = await apiClient.get(`/project/soft-deleted-nodes/${projectUuid}`);
         return response.data;
     } catch (err) {
         return err.response.data || "Couldn't fetch recycled nodes";

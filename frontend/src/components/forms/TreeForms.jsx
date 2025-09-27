@@ -1,4 +1,3 @@
-import ActionButton from "#components/ui/ActionButton";
 import Input from "#components/ui/Input";
 import { useState } from "react";
 import { useTreeContext } from "#contexts/TreeContext";
@@ -20,14 +19,12 @@ export function CreateCategory() {
     const navigate = useNavigate();
 
     const params = useParams();
-    const parNodeIdWithType = params.nodeId;
-    const parNodeId = parNodeIdWithType.split("-")[1];
-    const parNodeType = parNodeIdWithType.split("-")[0];
-    const projectId = params.projectId;
+    const parNodeUuid = params.nodeUuid;
+    const projectUuid = params.projectUuid;
 
     const [treeData, setTreeData] = useTreeContext();
 
-    const parNode = parNodeType === 'c' ? treeData.map.get(`c-${parNodeId}`) : treeData.map.get("projectNode");
+    const parNode = treeData.map.get(parNodeUuid);
     const [input, setInput] = useState({
         name: "",
         description: "",
@@ -51,33 +48,37 @@ export function CreateCategory() {
     }
 
     const handleSubmit = async () => {
-        const response = await createCategory(projectId, input.name, input.description, input.color, parNodeId === projectId ? null : parNodeId);
+        const response = await createCategory(projectUuid, input.name, input.description, input.color,
+            parNode.type === TREE_NODE_TYPES.projectNode ?
+                null :
+                parNodeUuid
+        );
+
         if (response.success) {
-            const parNode = parNodeType === "c" ? treeData.map.get(`c-${parNodeId}`) : treeData.map.get("projectNode");
-            const projectExpansionStateString = localStorage.getItem(`project-${projectId}-expansionState`);
+            const projectExpansionStateString = localStorage.getItem(`project-${projectUuid}-expansionState`);
             const projectExpansionStateJson = JSON.parse(projectExpansionStateString);
 
-            projectExpansionStateJson[response.data.categoryId] = {
+            projectExpansionStateJson[response.data.categoryUuid] = {
                 expansionState: TREE_NODE_EXPANSION_STATES.expanded,
                 features: {}
             };
-            localStorage.setItem(`project-${projectId}-expansionState`, JSON.stringify(projectExpansionStateJson));
+            localStorage.setItem(`project-${projectUuid}-expansionState`, JSON.stringify(projectExpansionStateJson));
 
             const childNode = new TreeNode(
-                response.data.categoryId,
+                response.data.categoryUuid,
                 response.data.categoryName,
-                parNodeId,
-                projectId,
+                parNodeUuid,
+                projectUuid,
                 TREE_NODE_EXPANSION_STATES.expanded,
                 TREE_NODE_TYPES.categoryNode,
-                input.color
+                response.data.color
             );
             parNode.children.push(childNode);
-            treeData.map.set(`c-${childNode.id}`, childNode);
+            treeData.map.set(childNode.uuid, childNode);
 
             const temp = { ...treeData };
             setTreeData(temp);
-            navigate(`/tree-view/${projectId}`);
+            navigate(`/tree-view/${projectUuid}`);
         }
     }
 
@@ -87,11 +88,11 @@ export function CreateCategory() {
             {/* heading */}
             <div className="h-fit text-2xl px-12 text-center text-gray-300">Add new
                 {
-                    parNodeType === "p" ?
+                    parNode.type === TREE_NODE_TYPES.projectNode ?
                         " category " :
                         <select id="formType" value="categoryForm"
                             className="mx-2 pr-4 border-2 border-purple-200 rounded-md bg-gray-800 text-white hover:cursor-pointer"
-                            onChange={() => { navigate(`/tree-view/${projectId}/node/${parNodeIdWithType}/add-new-feature`, { replace: true }) }}
+                            onChange={() => { navigate(`/tree-view/${projectUuid}/node/${parNodeUuid}/add-new-feature`, { replace: true }) }}
                         >
                             <option key="categoryForm" value="categoryForm">sub-category</option>
                             <option key="featureForm" value="featureForm">feature</option>
@@ -100,7 +101,7 @@ export function CreateCategory() {
                 <div>
                     to
                     {
-                        parNodeType === 'c' ?
+                        parNode.type === TREE_NODE_TYPES.categoryNode ?
                             " category " :
                             " project "
                     }
@@ -131,16 +132,13 @@ export function CreateFeature() {
     const projectUsers = usePopUpContext();
 
     const params = useParams();
-    const projectId = params.projectId;
-    const parNodeIdWithType = params.nodeId;
-    const parNodeType = parNodeIdWithType.split('-')[0];
-    const parNodeId = parNodeIdWithType.split('-')[1];
+    const projectUuid = params.projectUuid;
+    const parNodeUuid = params.nodeUuid;
 
     const [treeData, setTreeData] = useTreeContext();
 
-    // if parent node is category then get parent category name from map else get parent feature name
-    const parNode = parNodeType === 'c' ? treeData.map.get(`c-${parNodeId}`) : treeData.map.get(`f-${parNodeId}`);
-    const categoryId = parNodeType === 'c' ? parNodeId : treeData.map.get(parNodeIdWithType).upperLayerParNode;
+    const parNode = treeData.map.get(parNodeUuid);
+    const categoryUuid = parNode.type === TREE_NODE_TYPES.categoryNode ? parNodeUuid : treeData.map.get(parNodeUuid).upperLayerParNode;
 
     const [input, setInput] = useState({
         name: "",
@@ -172,25 +170,23 @@ export function CreateFeature() {
             dueDateISO8601Format,
             input.description,
             input.acceptanceCriteria,
-            parNodeId === categoryId ? null : parNodeId,
-            categoryId
+            parNode.type === TREE_NODE_TYPES.categoryNode ? null : parNodeUuid,
+            categoryUuid
         );
 
         if (response.success) {
-            const parNode = treeData.map.get(parNodeIdWithType);
-
-            const projectExpansionStateString = localStorage.getItem(`project-${projectId}-expansionState`);
+            const projectExpansionStateString = localStorage.getItem(`project-${projectUuid}-expansionState`);
             const projectExpansionStateJson = JSON.parse(projectExpansionStateString);
 
-            projectExpansionStateJson[categoryId].features[response.data.featureId] = TREE_NODE_EXPANSION_STATES.expanded;
+            projectExpansionStateJson[categoryUuid].features[response.data.featureUuid] = TREE_NODE_EXPANSION_STATES.expanded;
 
-            localStorage.setItem(`project-${projectId}-expansionState`, JSON.stringify(projectExpansionStateJson));
+            localStorage.setItem(`project-${projectUuid}-expansionState`, JSON.stringify(projectExpansionStateJson));
 
             const createdNode = new TreeNode(
-                response.data.featureId,
+                response.data.featureUuid,
                 response.data.featureName,
-                parNodeId,
-                categoryId,
+                parNodeUuid,
+                categoryUuid,
                 TREE_NODE_EXPANSION_STATES.expanded,
                 TREE_NODE_TYPES.featureNode,
                 "" // feature color is derived from category color, don't need to store separately
@@ -200,7 +196,7 @@ export function CreateFeature() {
 
             const temp = { ...treeData };
             setTreeData(temp);
-            navigate(`/tree-view/${projectId}`);
+            navigate(`/tree-view/${projectUuid}`);
         }
     }
 
@@ -211,10 +207,10 @@ export function CreateFeature() {
             <div className="h-[10%] text-2xl px-20 text-center text-gray-300">
                 Add new
                 {
-                    parNodeType === "f" ?
+                    parNode.type === TREE_NODE_TYPES.featureNode ?
                         " sub-feature " :
                         <select id="formType" className="mx-2 border-2 border-purple-200 rounded-md bg-gray-800 text-white hover:cursor-pointer"
-                            onChange={() => { navigate(`/tree-view/${projectId}/node/${parNodeIdWithType}/add-new-category`, { replace: true }) }} value="featureForm"
+                            onChange={() => { navigate(`/tree-view/${projectUuid}/node/${parNodeUuid}/add-new-category`, { replace: true }) }} value="featureForm"
                         >
                             <option key="featureForm" value="featureForm">
                                 feature
@@ -225,7 +221,7 @@ export function CreateFeature() {
                         </select>
                 }
                 <div>
-                    to {parNodeType === 'c' ? "category" : "feature"} <span className={`text-${parNode.color}-600`}>{parNode.name}</span>
+                    to {parNode.type === TREE_NODE_TYPES.categoryNode ? "category" : "feature"} <span className={`text-${parNode.color}-600`}>{parNode.name}</span>
                 </div>
             </div>
 

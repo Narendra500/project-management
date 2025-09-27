@@ -4,7 +4,6 @@ import { Outlet, useLoaderData } from "react-router";
 import { useState } from "react";
 import ProjectCard from "#components/cards/ProjectCard";
 import ProjectsContext from "#contexts/ProjectsContext";
-import { useMemo } from "react";
 
 export async function loader() {
     const response = await getUserProjects();
@@ -34,7 +33,7 @@ export default function ProjectsComponenet() {
                 </div>
                 {/* projects */}
                 <div className="w-full grow scroller">
-                    {projects.map(project => <ProjectCard key={project.id} id={project.id} >{project}</ProjectCard>)}
+                    {projects.map(project => <ProjectCard key={project.uuid} id={project.uuid} >{project}</ProjectCard>)}
                 </div>
                 {/* popup */}
                 <Outlet />

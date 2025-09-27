@@ -1,25 +1,25 @@
 import apiClient from "../config/api";
 
 export async function createFeature(
-    featureName,
-    featureGitBranch,
-    featureAssignee,
-    featureDueDate,
-    featureDescription,
-    featureAcceptanceCriteria,
-    featureParentId,
-    featureCategoryId,
+    name,
+    gitBranch,
+    assignee,
+    dueDate,
+    description,
+    acceptanceCriteria,
+    parentUuid,
+    categoryUuid,
 ) {
     try {
         const response = await apiClient.post("feature/create", {
-            featureName: featureName,
-            featureGitBranch,
-            featureAssignee,
-            featureDueDate,
-            featureDescription,
-            featureAcceptanceCriteria,
-            encodedFeatureParentId: featureParentId,
-            encodedCategoryId: featureCategoryId,
+            name,
+            gitBranch,
+            assignee,
+            dueDate,
+            description,
+            acceptanceCriteria,
+            parentUuid,
+            categoryUuid,
         });
 
         return response.data;
@@ -28,10 +28,9 @@ export async function createFeature(
     }
 }
 
-export async function getFeatureDetails(projectId, categoryId, featureId) {
+export async function getFeatureDetails(projectUuid, categoryUuid, featureUuid) {
     try {
-        const response = await apiClient.get(`/featureDetail/${projectId}/${categoryId}/${featureId}`);
-        console.log(response.data);
+        const response = await apiClient.get(`/featureDetail/${projectUuid}/${categoryUuid}/${featureUuid}`);
 
         return response.data;
     } catch (err) {

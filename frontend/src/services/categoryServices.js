@@ -1,13 +1,13 @@
 import apiClient from "../config/api";
 
-export async function createCategory(projectId, categoryName, categoryDescription, categoryColor, categoryParentId) {
+export async function createCategory(projectUuid, categoryName, categoryDescription, categoryColor, categoryParentUuid) {
     try {
         const response = await apiClient.post("category/create", {
-            encodedProjectId: projectId,
+            projectUuid: projectUuid,
             categoryName,
             categoryDescription,
             categoryColor,
-            encodedCategoryParentId: categoryParentId,
+            categoryParentUuid: categoryParentUuid,
         });
 
         return response.data;
@@ -16,10 +16,10 @@ export async function createCategory(projectId, categoryName, categoryDescriptio
     }
 }
 
-export async function getCategoryDetails(projectId, categoryId) {
+export async function getCategoryDetails(projectUuid, categoryUuid) {
     try {
-        const response = await apiClient.get(`category/${projectId}/${categoryId}`, {
-            encodedProjectId: projectId,
+        const response = await apiClient.get(`category/${projectUuid}/${categoryUuid}`, {
+            projectUuid: projectUuid,
         });
 
         return response.data;

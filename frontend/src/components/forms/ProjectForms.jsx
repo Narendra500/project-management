@@ -25,7 +25,7 @@ export function CreateUserProjectForm() {
     const handleSubmit = async () => {
         const response = await projectServices.createUserProject(input.projectName, input.projectDescription);
 
-        localStorage.setItem(`project-${response.data.id}-expansionState`, "{}");
+        localStorage.setItem(`project-${response.data.uuid}-expansionState`, "{}");
 
         projects.push(response.data);
         setProjects(projects);
@@ -35,6 +35,7 @@ export function CreateUserProjectForm() {
 
     return (
         <Form onSubmit={handleSubmit} className="flex w-full h-full flex-col items-center justify-center">
+            <div className="mb-6 text-2xl">Create Project</div>
             <Input name="projectName" onChange={handleInput} placeholder="Project name" isRequired={true} />
             <LongInput name="projectDescription" onChange={handleInput} placeholder="Project description" cssClasses="h-8/12" />
             <NavButton type={"submit"} buttonText={"Confirm"} extraClasses="w-8/12" />

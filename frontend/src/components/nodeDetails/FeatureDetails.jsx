@@ -7,6 +7,7 @@ export default function FeatureDetails() {
 
     return (
         <div className="h-9/12 w-full text-gray-300">
+            <div className="text-center text-2xl font-bold">Feature Details</div>
             <div className="px-26">
                 <div className="text-xl">Feature name:</div>
                 <div className="flex flex-col justify-center h-16 rounded-md text-gray-200 text-center text-xl px-4 bg-gray-700 border-2 border-gray-400">{feature.name}</div>

@@ -8,11 +8,11 @@ function TreeNodeComponent({ node, updateNode, navigate }) {
     return (
         <div className="font-mono">
             <div className="text-xl hover:cursor-default inline-block">{node.name}</div>
-            <button onClick={() => { navigate(`node/p-${node.id}/add-new-category`) }}
+            <button onClick={() => { navigate(`node/${node.uuid}/add-new-category`) }}
                 className="ml-4 font-bold text-gray-600 hover:text-gray-500 text-md border-1 px-2 pl-4 rounded-sm border-gray-800 hover:cursor-pointer hover:border-gray-500">Add</button>
             {node.children.map((child, index) => (
                 <RecursiveNode
-                    key={child.id}
+                    key={child.uuid}
                     node={child}
                     isLast={index === node.children.length - 1}
                     prefix=""
@@ -31,13 +31,18 @@ function RecursiveNode({ node, isLast, prefix, color, updateNode, navigate }) {
     return (
         < div className="whitespace-pre-wrap" >
             <div className="inline-block text-4xl">{prefix}{connector}{line}</div>
-            <Link to={node.type === TREE_NODE_TYPES.categoryNode ?
-                `node/${node.id}/view-category-details` :
-                `node/${node.upperLayerParNode}/${node.id}/view-feature-details`
-            }
-                className={`inline-block text-xl ${TREE_NODE_TEXT_COLORS[color]} hover:text-amber-100 hover:cursor-pointer`}>
+            <Link
+                to=
+                {
+                    node.type === TREE_NODE_TYPES.categoryNode ?
+                        `node/${node.uuid}/view-category-details` :
+                        `node/${node.upperLayerParNode}/${node.uuid}/view-feature-details`
+                }
+                className={`inline-block text-xl ${TREE_NODE_TEXT_COLORS[color]} hover:text-amber-100 hover:cursor-pointer`}
+            >
                 &nbsp;{node.name}{node.type === TREE_NODE_TYPES.categoryNode && "/"}
             </Link>
+
             {
                 node.children.length > 0 &&
                 <button onClick={() => (
@@ -53,13 +58,13 @@ function RecursiveNode({ node, isLast, prefix, color, updateNode, navigate }) {
                     {node.expansionState === TREE_NODE_EXPANSION_STATES.expanded ? "-" : "+"}
                 </button>
             }
-            <button onClick={() => navigate(`node/${node.type === TREE_NODE_TYPES.categoryNode ? 'c' : 'f'}-${node.id}/add-new-feature`)}
+            <button onClick={() => navigate(`node/${node.uuid}/add-new-feature`)}
                 className="ml-4 font-bold text-gray-600 hover:text-gray-500 text-md border-1 px-2 pl-4 rounded-sm border-gray-800 hover:cursor-pointer hover:border-gray-600">Add</button>
             {
                 node.expansionState === TREE_NODE_EXPANSION_STATES.expanded &&
                 node.children.map((child, index) => (
                     <RecursiveNode
-                        key={child.id}
+                        key={child.uuid}
                         node={child}
                         isLast={index === node.children.length - 1}
                         prefix={prefix + (isLast ? '   ' : '│  ')}
@@ -74,11 +79,11 @@ function RecursiveNode({ node, isLast, prefix, color, updateNode, navigate }) {
 }
 
 export async function loader({ params }) {
-    const projectId = params.projectId;
-    if (projectId === "null") {
+    const projectUuid = params.projectUuid;
+    if (projectUuid === "null") {
         return "";
     }
-    const response = await getProjectData(projectId);
+    const response = await getProjectData(projectUuid);
     return response.data.projectData;
 }
 
@@ -91,13 +96,13 @@ export default function TreeViewComponent() {
         if (!node) return;
         node[field] = value;
         if (field === "expansionState") {
-            const projectExpansionStateString = localStorage.getItem(`project-${treeData.projectNode.id}-expansionState`);
+            const projectExpansionStateString = localStorage.getItem(`project-${treeData.projectNode.uuid}-expansionState`);
             const projectExpansionStateJson = JSON.parse(projectExpansionStateString);
             if (node.type === TREE_NODE_TYPES.categoryNode)
-                projectExpansionStateJson[node.id].expansionState = value;
+                projectExpansionStateJson[node.uuid].expansionState = value;
             else
-                projectExpansionStateJson[node.upperLayerParNode].features[node.id] = value;
-            localStorage.setItem(`project-${treeData.projectNode.id}-expansionState`, JSON.stringify(projectExpansionStateJson));
+                projectExpansionStateJson[node.upperLayerParNode].features[node.uuid] = value;
+            localStorage.setItem(`project-${treeData.projectNode.uuid}-expansionState`, JSON.stringify(projectExpansionStateJson));
         }
         const temp = { ...treeData };
         setTreeData(temp);
@@ -105,9 +110,7 @@ export default function TreeViewComponent() {
 
     if (treeData === null) return (
         <div className="h-full flex flex-col justify-center items-center">
-            <div className="text-5xl">Looks like you haven't set any project as active yet!</div>
-            <Link to="/project/user/me" className="mt-10 text-2xl text-purple-700 underline" replace>Click here to go to projects section</Link>
-        </div>
+            <div className="text-5xl">Looks like you haven't set any project as active yet!</div> <Link to="/project/user/me" className="mt-10 text-2xl text-purple-700 underline" replace>Click here to go to projects section</Link> </div>
     )
 
     return (

@@ -10,8 +10,8 @@ export const TREE_NODE_EXPANSION_STATES = Object.freeze({
 });
 
 export class TreeNode {
-    constructor(id, name, parentNode, upperLayerParNode, treeNodeExpansionState, treeNodeType, color) {
-        this.id = id;
+    constructor(uuid, name, parentNode, upperLayerParNode, treeNodeExpansionState, treeNodeType, color) {
+        this.uuid = uuid;
         this.name = name;
         this.parentNode = parentNode;
         this.upperLayerParNode = upperLayerParNode;
@@ -47,67 +47,64 @@ export function convertToTree(projectData) {
     if (!projectData) return null;
 
     const map = new Map();
-    const projectExpansionStateString = localStorage.getItem(`project-${projectData.id}-expansionState`);
+    const projectExpansionStateString = localStorage.getItem(`project-${projectData.uuid}-expansionState`);
     const projectExpansionStateJson = JSON.parse(projectExpansionStateString);
     // root node
     const projectNode = new TreeNode(
-        projectData.id,
+        projectData.uuid,
         projectData.name,
         null,
         null,
         TREE_NODE_EXPANSION_STATES.expanded,
         TREE_NODE_TYPES.projectNode,
     );
-    map.set("projectNode", projectNode);
+    map.set(projectData.uuid, projectNode);
 
     // create node and map them for each category of the project and each feature of a category.
     for (const category of projectData.categories) {
-        // create category node and map it's id with prefix 'c-' as the ids are unique within a table not across tables, so feature and category may have
-        // same id
         const categoryNode = new TreeNode(
-            category.id,
+            category.uuid,
             category.name,
-            category.parentId,
-            projectData.id,
-            projectExpansionStateJson[category.id].expansionState || TREE_NODE_EXPANSION_STATES.expanded,
+            category.parentUuid,
+            projectData.uuid,
+            projectExpansionStateJson[category.uuid].expansionState || TREE_NODE_EXPANSION_STATES.expanded,
             TREE_NODE_TYPES.categoryNode,
             category.color,
         );
-        map.set(`c-${category.id}`, categoryNode);
+        map.set(category.uuid, categoryNode);
 
-        // create feature nodes of the created category and map them with prefic 'f-'
+        // create feature nodes of the created category and map them
         for (const feature of category.features) {
             const featureNode = new TreeNode(
-                feature.id,
+                feature.uuid,
                 feature.name,
-                feature.parentId,
-                category.id,
-                projectExpansionStateJson[category.id].features[feature.id] || TREE_NODE_EXPANSION_STATES.expanded,
+                feature.parentUuid,
+                category.uuid,
+                projectExpansionStateJson[category.uuid].features[feature.uuid] || TREE_NODE_EXPANSION_STATES.expanded,
                 TREE_NODE_TYPES.featureNode,
                 category.color,
             );
-            map.set(`f-${feature.id}`, featureNode);
+            map.set(feature.uuid, featureNode);
         }
     }
 
     // connect all nodes to their respective parent nodes
     for (const category of projectData.categories) {
-        const categoryNode = map.get(`c-${category.id}`);
+        const categoryNode = map.get(category.uuid);
 
-        // if not parentId for category then its a top level category, therefore the child of the projectNode
-        if (category.parentId === null) projectNode.children.push(categoryNode);
+        // if not parentUuid for category then its a top level category, therefore the child of the projectNode
+        if (category.parentUuid === null) projectNode.children.push(categoryNode);
         // get categories parent node and push the current node to its children array
         else {
-            const parent = `c-${category.parentId}`;
-            map.get(parent).children.push(categoryNode);
+            map.get(category.parentUuid).children.push(categoryNode);
         }
 
         // connect all features of the current category to their parent feature/category
         for (const feature of category.features) {
-            const featureNode = map.get(`f-${feature.id}`);
-            // no parentId , current category is the parent
-            if (feature.parentId === null) categoryNode.children.push(featureNode);
-            else map.get(`f-${feature.parentId}`).children.push(featureNode);
+            const featureNode = map.get(feature.uuid);
+            // no parentUuid , current category is the parent
+            if (feature.parentUuid === null) categoryNode.children.push(featureNode);
+            else map.get(feature.parentUuid).children.push(featureNode);
         }
     }
 

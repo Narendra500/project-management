@@ -5,7 +5,7 @@ import { useAppContext } from "#contexts/AppContext";
 export default function NavBar() {
     const [isMenuActive, setMenuStatus] = useState(false);
     const { user } = useAppContext();
-    const activeProjectId = user.activeProjectId;
+    const activeProjectUuid = user.activeProjectUuid;
 
     const toggleMenuState = () => {
         setMenuStatus(!isMenuActive);
@@ -36,16 +36,16 @@ export default function NavBar() {
                     {isMenuActive ? "Hide Menu" : "Show Menu"}
                 </button>
                 {/* navigation links */}
-                <Link to={`recycle-bin/${activeProjectId}`} className={navClass}>
+                <Link to={`recycle-bin/${activeProjectUuid}`} className={navClass}>
                     Recycle bin
                 </Link>
                 <Link to="project/user/me" className={navClass}>
                     Projects
                 </Link>
-                <Link to={`tree-view/${activeProjectId}`} className={navClass}>
+                <Link to={`tree-view/${activeProjectUuid}`} className={navClass}>
                     Tree View
                 </Link>
-                <Link to={`kanbhan/${activeProjectId}`} className={navClass}>
+                <Link to={`kanbhan/${activeProjectUuid}`} className={navClass}>
                     Kanbhan
                 </Link>
                 <Link to="profile/me" className={navClass + " mr-[5%] ml-[5%]"}>
@@ -58,16 +58,16 @@ export default function NavBar() {
                 className={`${isMenuActive ? "block" : "hidden"} bg-gray-900 absolute h-74 translate-x-full translate-y-20 w-1/2 rounded-xl border-2 border-purple-200 md:hidden`
                 }
             >
-                <Link to={`recycle-bin/${activeProjectId}`} className={navClass}>
+                <Link to={`recycle-bin/${activeProjectUuid}`} className={navClass}>
                     Recycle bin
                 </Link>
                 <Link to="project/user/me" className={navClassMenu}>
                     Projects
                 </Link >
-                <Link to={`tree-view/${activeProjectId}`} className={navClassMenu}>
+                <Link to={`tree-view/${activeProjectUuid}`} className={navClassMenu}>
                     Tree View
                 </Link>
-                <Link to={`kanbhan/${activeProjectId}`} className={navClassMenu}>
+                <Link to={`kanbhan/${activeProjectUuid}`} className={navClassMenu}>
                     Kanbhan
                 </Link>
                 <Link to="profile/me" className={navClassMenu}>

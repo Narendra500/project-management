@@ -2,8 +2,8 @@ import { getAllSoftDeletedProjectNodes } from "#services/projectServices";
 import { useLoaderData } from "react-router"
 
 export async function loader({ params }) {
-    const projectId = params.projectId;
-    const response = await getAllSoftDeletedProjectNodes(projectId);
+    const projectUuid = params.projectUuid;
+    const response = await getAllSoftDeletedProjectNodes(projectUuid);
 
     return response;
 }

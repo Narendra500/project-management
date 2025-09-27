@@ -5,6 +5,7 @@ export default function CategoryDetails() {
 
     return (
         <div className="h-[86%] w-10/12">
+            <div className="text-center text-2xl font-bold">Category Details</div>
             <div className="text-xl text-gray-300">Category name:</div>
             <div className="flex flex-col justify-center h-16 rounded-md text-gray-200 text-2xl text-center bg-gray-700">{categoryDetails.name}</div>
             <div className="text-xl mt-4 text-gray-300">Category description:</div>

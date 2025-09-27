@@ -3,7 +3,7 @@ import { updateActiveProject } from "#services/projectServices";
 import { useAppContext } from "#contexts/AppContext";
 
 export default function ProjectCard({ children, id }) {
-    const { user, setUser } = useAppContext(); // gets user details we are only interested in activeProjectId
+    const { user, setUser } = useAppContext(); // gets user details we are only interested in activeProjectUuid
 
     const addSpecialClassesForHeaingOrActiveProject = () => {
         let extraClass = "";
@@ -15,7 +15,7 @@ export default function ProjectCard({ children, id }) {
 
     const isProjectActive = () => {
         // ensure if is not undefined first
-        return id && id === user.activeProjectId;
+        return id && id === user.activeProjectUuid;
     }
 
     const toggleProjectActiveStatus = async () => {
@@ -23,7 +23,7 @@ export default function ProjectCard({ children, id }) {
         if (response?.success) {
             setUser(prevUser => ({
                 ...prevUser,
-                activeProjectId: response.data.activeProjectId
+                activeProjectUuid: response.data.activeProjectUuid
             }))
         }
     }
