@@ -193,6 +193,7 @@ export function CreateFeature() {
             );
 
             parNode.children.push(createdNode);
+            treeData.map.set(response.data.featureUuid, createdNode);
 
             const temp = { ...treeData };
             setTreeData(temp);
