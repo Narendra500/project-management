@@ -15,12 +15,12 @@ model Category {
     deletedAt       DateTime?  @map("deleted_at") @db.Timestamp(6)
     createdAt       DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
     updatedAt       DateTime?  @updatedAt @map("updated_at") @db.Timestamp(6)
-    uuid            String     @id @default(dbgenerated("gen_random_uuid()")) @map("category_uuid") @db.Uuid
-    parentUuid      String?    @map("category_parent_uuid") @db.Uuid
-    projectUuid     String?    @map("project_uuid") @db.Uuid
+    uuid            String     @id @default(dbgenerated("gen_random_uuid()")) @map("category_uuid") @db.VarChar(48)
+    projectUuid     String     @map("project_uuid") @db.VarChar(48)
+    parentUuid      String?    @map("category_parent_uuid") @db.VarChar(48)
     parentCategory  Category?  @relation("categoriesTocategories", fields: [parentUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
     childCategories Category[] @relation("categoriesTocategories")
-    project         Project?   @relation(fields: [projectUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+    project         Project    @relation(fields: [projectUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
     features        Feature[]
 
     @@map("categories")
@@ -46,7 +46,7 @@ model FeatureDetail {
     dueDate            DateTime? @map("due_date") @db.Date
     priority           String?   @map("feature_priority") @db.VarChar(20)
     assigneeId         Int?      @map("assignee_id")
-    featureUuid        String    @id @map("feature_uuid") @db.Uuid
+    featureUuid        String    @id(map: "pkey_feature_details") @map("feature_uuid") @db.VarChar(48)
     assignee           User?     @relation(fields: [assigneeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
     feature            Feature   @relation(fields: [featureUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
 
@@ -59,9 +59,9 @@ model Feature {
     deletedAt     DateTime?      @map("deleted_at") @db.Timestamp(6)
     createdAt     DateTime?      @default(now()) @map("created_at") @db.Timestamp(6)
     updatedAt     DateTime?      @updatedAt @map("updated_at") @db.Timestamp(6)
-    uuid          String         @id @default(dbgenerated("gen_random_uuid()")) @map("feature_uuid") @db.Uuid
-    parentUuid    String?        @map("feature_parent_uuid") @db.Uuid
-    categoryUuid  String?        @map("category_uuid") @db.Uuid
+    uuid          String         @id @default(dbgenerated("gen_random_uuid()")) @map("feature_uuid") @db.VarChar(48)
+    categoryUuid  String?        @map("category_uuid") @db.VarChar(48)
+    parentUuid    String?        @map("feature_parent_uuid") @db.VarChar(48)
     details       FeatureDetail?
     categories    Category?      @relation(fields: [categoryUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
     parentFeature Feature?       @relation("featuresTofeatures", fields: [parentUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
@@ -75,7 +75,7 @@ model ProjectInvite {
     inviteCode  String    @map("invite_code") @db.Uuid
     createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
     expiresAt   DateTime  @map("expires_at") @db.Timestamp(6)
-    projectUuid String    @map("project_uuid") @db.Uuid
+    projectUuid String    @map("project_uuid") @db.VarChar(48)
     project     Project   @relation(fields: [projectUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
 
     @@map("project_invites")
@@ -90,7 +90,7 @@ model ProjectRole {
     updatedAt        DateTime?     @updatedAt @map("updated_at") @db.Timestamp(6)
     writePermission  Boolean       @default(false) @map("write_permission")
     deletePermission Boolean       @default(false) @map("delete_permission")
-    projectUuid      String        @map("project_uuid") @db.Uuid
+    projectUuid      String        @map("project_uuid") @db.VarChar(48)
     project          Project       @relation(fields: [projectUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
     projectUsers     projectUser[]
 
@@ -100,13 +100,12 @@ model ProjectRole {
 model projectUser {
     userId       Int         @map("user_id")
     roleId       Int         @map("project_role_id")
-    projectUuid  String      @map("project_uuid") @db.Uuid
+    projectUuid  String      @map("project_uuid") @db.VarChar(48)
     project      Project     @relation(fields: [projectUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
     projectRoles ProjectRole @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_project_project_role_id_fkey")
     users        User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_project_user_id_fkey")
 
-    @@id([userId, projectUuid], map: "primary_key_project_users")
-    @@index([userId], map: "idx_user_project_user_id")
+    @@id([userId, projectUuid], map: "pkey_project_users")
     @@map("project_users")
 }
 
@@ -117,7 +116,7 @@ model Project {
     deletedAt      DateTime?       @map("deleted_at") @db.Timestamp(6)
     createdAt      DateTime?       @default(now()) @map("created_at") @db.Timestamp(6)
     updatedAt      DateTime?       @updatedAt @map("updated_at") @db.Timestamp(6)
-    uuid           String          @id @default(dbgenerated("gen_random_uuid()")) @map("project_uuid") @db.Uuid
+    uuid           String          @id @default(cuid()) @map("project_uuid") @db.VarChar(48)
     categories     Category[]
     projectInvites ProjectInvite[]
     projectRoles   ProjectRole[]
@@ -147,7 +146,7 @@ model User {
     updatedAt                  DateTime?                    @updatedAt @map("updated_at") @db.Timestamp(6)
     displayName                String                       @default("PleaseChangeTheDisplayName") @map("display_name") @db.VarChar(64)
     isVerified                 Boolean                      @default(false) @map("is_verified")
-    activeProjectUuid          String?                      @map("active_project_uuid") @db.Uuid
+    activeProjectUuid          String?                      @map("active_project_uuid") @db.VarChar(48)
     featureDetails             FeatureDetail[]
     projectMemberships         projectUser[]
     userEmailVerificationToken userEmailVerificationToken[]

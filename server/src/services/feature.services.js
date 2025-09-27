@@ -1,5 +1,6 @@
 import { FeatureStatus } from "@prisma/client";
 import prisma from "#config/prisma.client";
+import { createId } from "@paralleldrive/cuid2";
 
 export async function checkFeatureExistsForCategory(featureName, categoryUuid) {
     const featureExists = await prisma.feature.findFirst({
@@ -25,6 +26,7 @@ export async function createFeature(
     return await prisma.$transaction(async (tx) => {
         const feature = await tx.feature.create({
             data: {
+                uuid: createId(),
                 name: featureName,
                 categoryUuid: categoryUuid,
                 parentUuid: featureParentUuid,

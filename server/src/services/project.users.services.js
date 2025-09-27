@@ -29,6 +29,6 @@ export async function getProjectUsers(projectUuid, userId) {
         FROM project_users pu
         INNER JOIN users u ON pu.user_id = u.user_id
         INNER JOIN project_roles pr ON pu.project_role_id = pr.project_role_id
-        WHERE pu.project_uuid = ${projectUuid}::uuid
+        WHERE pu.project_uuid = ${projectUuid}
     `;
 }

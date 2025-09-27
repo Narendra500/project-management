@@ -1,4 +1,5 @@
 import prisma from "#config/prisma.client";
+import { createId } from "@paralleldrive/cuid2";
 
 export async function checkCategoryExists(categoryName, projectUuid) {
     const existingCategory = await prisma.category.findFirst({
@@ -26,6 +27,7 @@ export async function checkSubCategoryExists(categoryName, categoryParentUuid) {
 export async function createCategory(projectUuid, categoryName, categoryDescription, categoryColor, categoryParentUuid) {
     return await prisma.category.create({
         data: {
+            uuid: createId(),
             projectUuid: projectUuid,
             name: categoryName,
             description: categoryDescription,

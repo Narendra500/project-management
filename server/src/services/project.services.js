@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2";
 import prisma from "#config/prisma.client";
 
 export async function getAllNotDeletedProjectCategoriesAndFeatures(projectUuid, userId) {
@@ -60,6 +61,7 @@ export async function createProjectForUser(createrUserId, projectName, projectDe
     return await prisma.$transaction(async (tx) => {
         const project = await tx.project.create({
             data: {
+                uuid: createId(),
                 name: projectName,
                 description: projectDescription,
             },

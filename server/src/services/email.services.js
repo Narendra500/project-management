@@ -2,7 +2,6 @@ import transporter from "#config/nodemailer";
 import logger from "#utils/logger";
 
 async function sendEmail({ to, subject, html }) {
-    //  Define the mail options
     const mailOptions = {
         from: `"Orbit" <${process.env.EMAIL_ADDRESS}>`, // Sender name and address
         to: to,
