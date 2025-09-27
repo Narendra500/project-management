@@ -7,103 +7,23 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model User {
-    id                         Int                          @id @default(autoincrement()) @map("user_id")
-    name                       String                       @map("user_name") @db.VarChar(128)
-    hashedPassword             String                       @map("hashed_password") @db.VarChar(128)
-    isDeleted                  Boolean                      @default(false) @map("is_deleted")
-    deletedAt                  DateTime?                    @map("deleted_at") @db.Timestamp(6)
-    createdAt                  DateTime?                    @default(now()) @map("created_at") @db.Timestamp(6)
-    updatedAt                  DateTime?                    @updatedAt @map("updated_at") @db.Timestamp(6)
-    displayName                String                       @default("PleaseChangeTheDisplayName") @map("display_name") @db.VarChar(64)
-    isVerified                 Boolean                      @default(false) @map("is_verified")
-    activeProjectId            Int?                         @map("active_project_id")
-    assignedFeatures           FeatureDetail[]
-    projectMemberships         projectUser[]
-    userEmailVerificationToken userEmailVerificationToken[]
-
-    @@map("users")
-}
-
-model Project {
-    id           Int             @id @default(autoincrement()) @map("project_id")
-    name         String          @map("project_name") @db.VarChar(128)
-    description  String?         @map("project_description")
-    isDeleted    Boolean         @default(false) @map("is_deleted")
-    deletedAt    DateTime?       @map("deleted_at") @db.Timestamp(6)
-    createdAt    DateTime?       @default(now()) @map("created_at") @db.Timestamp(6)
-    updatedAt    DateTime?       @updatedAt @map("updated_at") @db.Timestamp(6)
-    categories   Category[]
-    invites      ProjectInvite[]
-    roles        ProjectRole[]
-    projectUsers projectUser[]
-
-    @@map("projects")
-}
-
-model ProjectInvite {
-    id         Int       @id @default(autoincrement()) @map("project_invite_id")
-    projectId  Int       @map("project_id")
-    inviteCode String    @map("invite_code") @db.Uuid
-    createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
-    expiresAt  DateTime  @map("expires_at") @db.Timestamp(6)
-    project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-    @@map("project_invites")
-}
-
-model ProjectRole {
-    id               Int           @id @default(autoincrement()) @map("project_role_id")
-    name             String        @map("project_role_name") @db.VarChar(64)
-    projectId        Int           @map("project_id")
-    isDeleted        Boolean       @default(false) @map("is_deleted")
-    deletedAt        DateTime?     @map("deleted_at") @db.Timestamp(6)
-    createdAt        DateTime?     @default(now()) @map("created_at") @db.Timestamp(6)
-    updatedAt        DateTime?     @updatedAt @map("updated_at") @db.Timestamp(6)
-    writePermission  Boolean       @default(false) @map("write_permission")
-    deletePermission Boolean       @default(false) @map("delete_permission")
-    project          Project       @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-    projectUsers     projectUser[]
-
-    @@map("project_roles")
-}
-
 model Category {
-    id          Int        @id @default(autoincrement()) @map("category_id")
-    name        String     @map("category_name") @db.VarChar(128)
-    description String?    @map("category_description")
-    color       String     @map("category_color") @db.VarChar(32)
-    parentId    Int?       @map("category_parent_id")
-    isDeleted   Boolean    @default(false) @map("is_deleted")
-    deletedAt   DateTime?  @map("deleted_at") @db.Timestamp(6)
-    createdAt   DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
-    updatedAt   DateTime?  @updatedAt @map("updated_at") @db.Timestamp(6)
-    projectId   Int        @map("project_id")
-    parent      Category?  @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-    children    Category[] @relation("CategoryToCategory")
-    project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-    features    Feature[]
+    name            String     @map("category_name") @db.VarChar(128)
+    description     String?    @map("category_description")
+    color           String     @map("category_color") @db.VarChar(32)
+    isDeleted       Boolean    @default(false) @map("is_deleted")
+    deletedAt       DateTime?  @map("deleted_at") @db.Timestamp(6)
+    createdAt       DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
+    updatedAt       DateTime?  @updatedAt @map("updated_at") @db.Timestamp(6)
+    uuid            String     @id @default(dbgenerated("gen_random_uuid()")) @map("category_uuid") @db.Uuid
+    parentUuid      String?    @map("category_parent_uuid") @db.Uuid
+    projectUuid     String?    @map("project_uuid") @db.Uuid
+    parentCategory  Category?  @relation("categoriesTocategories", fields: [parentUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+    childCategories Category[] @relation("categoriesTocategories")
+    project         Project?   @relation(fields: [projectUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+    features        Feature[]
 
-    @@index([parentId], map: "idx_category_parent_id")
     @@map("categories")
-}
-
-model Feature {
-    id             Int            @id @default(autoincrement()) @map("feature_id")
-    name           String         @map("feature_name") @db.VarChar(128)
-    parentId       Int?           @map("feature_parent_id")
-    isDeleted      Boolean        @default(false) @map("is_deleted")
-    deletedAt      DateTime?      @map("deleted_at") @db.Timestamp(6)
-    createdAt      DateTime?      @default(now()) @map("created_at") @db.Timestamp(6)
-    updatedAt      DateTime?      @updatedAt @map("updated_at") @db.Timestamp(6)
-    categoryId     Int            @map("category_id")
-    featureDetails FeatureDetail?
-    category       Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-    parent         Feature?       @relation("FeatureToFeature", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-    children       Feature[]      @relation("FeatureToFeature")
-
-    @@index([parentId], map: "idx_feature_parent_id")
-    @@map("features")
 }
 
 enum FeatureStatus {
@@ -119,32 +39,92 @@ enum FeaturePriority {
 }
 
 model FeatureDetail {
-    featureId          Int       @id @map("feature_id")
     description        String?   @map("feature_description")
     acceptanceCriteria String?   @map("feature_acceptance_criteria")
     gitBranch          String?   @map("feature_git_branch") @db.VarChar(128)
     status             String?   @map("feature_status") @db.VarChar(20)
-    assigneeId         Int?      @map("assignee_user_id")
     dueDate            DateTime? @map("due_date") @db.Date
     priority           String?   @map("feature_priority") @db.VarChar(20)
+    assigneeId         Int?      @map("assignee_id")
+    featureUuid        String    @id @map("feature_uuid") @db.Uuid
     assignee           User?     @relation(fields: [assigneeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-    feature            Feature   @relation(fields: [featureId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+    feature            Feature   @relation(fields: [featureUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
 
     @@map("feature_details")
 }
 
+model Feature {
+    name          String         @map("feature_name") @db.VarChar(128)
+    isDeleted     Boolean        @default(false) @map("is_deleted")
+    deletedAt     DateTime?      @map("deleted_at") @db.Timestamp(6)
+    createdAt     DateTime?      @default(now()) @map("created_at") @db.Timestamp(6)
+    updatedAt     DateTime?      @updatedAt @map("updated_at") @db.Timestamp(6)
+    uuid          String         @id @default(dbgenerated("gen_random_uuid()")) @map("feature_uuid") @db.Uuid
+    parentUuid    String?        @map("feature_parent_uuid") @db.Uuid
+    categoryUuid  String?        @map("category_uuid") @db.Uuid
+    details       FeatureDetail?
+    categories    Category?      @relation(fields: [categoryUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+    parentFeature Feature?       @relation("featuresTofeatures", fields: [parentUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+    childFeatures Feature[]      @relation("featuresTofeatures")
+
+    @@map("features")
+}
+
+model ProjectInvite {
+    id          Int       @id @default(autoincrement()) @map("project_invite_id")
+    inviteCode  String    @map("invite_code") @db.Uuid
+    createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+    expiresAt   DateTime  @map("expires_at") @db.Timestamp(6)
+    projectUuid String    @map("project_uuid") @db.Uuid
+    project     Project   @relation(fields: [projectUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+
+    @@map("project_invites")
+}
+
+model ProjectRole {
+    id               Int           @id @default(autoincrement()) @map("project_role_id")
+    name             String        @map("project_role_name") @db.VarChar(64)
+    isDeleted        Boolean       @default(false) @map("is_deleted")
+    deletedAt        DateTime?     @map("deleted_at") @db.Timestamp(6)
+    createdAt        DateTime?     @default(now()) @map("created_at") @db.Timestamp(6)
+    updatedAt        DateTime?     @updatedAt @map("updated_at") @db.Timestamp(6)
+    writePermission  Boolean       @default(false) @map("write_permission")
+    deletePermission Boolean       @default(false) @map("delete_permission")
+    projectUuid      String        @map("project_uuid") @db.Uuid
+    project          Project       @relation(fields: [projectUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+    projectUsers     projectUser[]
+
+    @@map("project_roles")
+}
+
 model projectUser {
     userId       Int         @map("user_id")
-    projectId    Int         @map("project_id")
     roleId       Int         @map("project_role_id")
-    project      Project     @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_project_project_id_fkey")
+    projectUuid  String      @map("project_uuid") @db.Uuid
+    project      Project     @relation(fields: [projectUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
     projectRoles ProjectRole @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_project_project_role_id_fkey")
     users        User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_project_user_id_fkey")
 
-    @@id([userId, projectId], map: "user_project_pkey")
-    @@index([projectId], map: "idx_user_project_project_id")
+    @@id([userId, projectUuid], map: "primary_key_project_users")
     @@index([userId], map: "idx_user_project_user_id")
     @@map("project_users")
+}
+
+model Project {
+    name           String          @map("project_name") @db.VarChar(128)
+    description    String?         @map("project_description")
+    isDeleted      Boolean         @default(false) @map("is_deleted")
+    deletedAt      DateTime?       @map("deleted_at") @db.Timestamp(6)
+    createdAt      DateTime?       @default(now()) @map("created_at") @db.Timestamp(6)
+    updatedAt      DateTime?       @updatedAt @map("updated_at") @db.Timestamp(6)
+    uuid           String          @id @default(dbgenerated("gen_random_uuid()")) @map("project_uuid") @db.Uuid
+    categories     Category[]
+    projectInvites ProjectInvite[]
+    projectRoles   ProjectRole[]
+    projectUsers   projectUser[]
+    users          User[]
+
+    @@map("projects")
 }
 
 model userEmailVerificationToken {
@@ -155,4 +135,23 @@ model userEmailVerificationToken {
 
     @@id([userId, verificationToken])
     @@map("user_email_verification_token")
+}
+
+model User {
+    id                         Int                          @id @default(autoincrement()) @map("user_id")
+    name                       String                       @map("user_name") @db.VarChar(128)
+    hashedPassword             String                       @map("hashed_password") @db.VarChar(128)
+    isDeleted                  Boolean                      @default(false) @map("is_deleted")
+    deletedAt                  DateTime?                    @map("deleted_at") @db.Timestamp(6)
+    createdAt                  DateTime?                    @default(now()) @map("created_at") @db.Timestamp(6)
+    updatedAt                  DateTime?                    @updatedAt @map("updated_at") @db.Timestamp(6)
+    displayName                String                       @default("PleaseChangeTheDisplayName") @map("display_name") @db.VarChar(64)
+    isVerified                 Boolean                      @default(false) @map("is_verified")
+    activeProjectUuid          String?                      @map("active_project_uuid") @db.Uuid
+    featureDetails             FeatureDetail[]
+    projectMemberships         projectUser[]
+    userEmailVerificationToken userEmailVerificationToken[]
+    project                    Project?                     @relation(fields: [activeProjectUuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction)
+
+    @@map("users")
 }

@@ -1,10 +1,11 @@
+import { FeatureStatus } from "@prisma/client";
 import prisma from "#config/prisma.client";
 
-export async function checkFeatureExistsForCategory(featureName, categoryId) {
+export async function checkFeatureExistsForCategory(featureName, categoryUuid) {
     const featureExists = await prisma.feature.findFirst({
         where: {
             name: featureName,
-            categoryId: categoryId,
+            categoryUuid: categoryUuid,
         },
     });
 
@@ -18,21 +19,22 @@ export async function createFeature(
     featureDueDate,
     featureDescription,
     featureAcceptanceCriteria,
-    categoryId,
-    featureParentId,
+    categoryUuid,
+    featureParentUuid,
 ) {
     return await prisma.$transaction(async (tx) => {
         const feature = await tx.feature.create({
             data: {
                 name: featureName,
-                categoryId: categoryId,
-                parentId: featureParentId,
+                categoryUuid: categoryUuid,
+                parentUuid: featureParentUuid,
             },
         });
 
         await tx.featureDetail.create({
             data: {
-                featureId: feature.id,
+                featureUuid: feature.uuid,
+                status: FeatureStatus.open,
                 description: featureDescription,
                 gitBranch: featureGitBranch,
                 assigneeId: featureAssigneeId || null,
@@ -45,11 +47,11 @@ export async function createFeature(
     });
 }
 
-export async function getFeatureDetailsById(featureId, categoryId) {
+export async function getFeatureDetailsById(featureUuid, categoryUuid) {
     return await prisma.feature.findUnique({
         where: {
-            featureId: featureId,
-            categoryId: categoryId,
+            uuid: featureUuid,
+            categoryUuid: categoryUuid,
         },
         include: {
             featureDetails: {

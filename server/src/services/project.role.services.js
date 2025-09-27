@@ -1,9 +1,9 @@
 import prisma from "#config/prisma.client";
 
-export async function createProjectRole(roleName, projectId) {
+export async function createProjectRole(roleName, projectUuid) {
     return await prisma.projectRole.create({
         data: {
-            projectId: projectId,
+            projectUuid: projectUuid,
             name: roleName,
         },
     });

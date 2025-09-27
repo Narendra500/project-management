@@ -1,21 +1,21 @@
 import prisma from "#config/prisma.client";
 
-export async function checkCategoryExists(categoryName, projectId) {
+export async function checkCategoryExists(categoryName, projectUuid) {
     const existingCategory = await prisma.category.findFirst({
         where: {
             name: categoryName,
-            projectId: projectId,
+            projectUuid: projectUuid,
         },
     });
 
     return !!existingCategory;
 }
 
-export async function checkSubCategoryExists(categoryName, categoryParentId) {
+export async function checkSubCategoryExists(categoryName, categoryParentUuid) {
     const existingCategory = await prisma.category.findFirst({
         where: {
             name: categoryName,
-            parentId: categoryParentId,
+            projectUuid: categoryParentUuid,
         },
     });
 
@@ -23,26 +23,26 @@ export async function checkSubCategoryExists(categoryName, categoryParentId) {
 }
 
 // prettier-ignore
-export async function createCategory(projectId, categoryName, categoryDescription, categoryColor, categoryParentId) {
+export async function createCategory(projectUuid, categoryName, categoryDescription, categoryColor, categoryParentUuid) {
     return await prisma.category.create({
         data: {
-            projectId: projectId,
+            projectUuid: projectUuid,
             name: categoryName,
             description: categoryDescription,
             color: categoryColor,
-            parentId: categoryParentId
+            parentUuid: categoryParentUuid
         }
     })
 }
 
-export async function canUserCreateCategory(userId, projectId) {
+export async function canUserCreateCategory(userId, projectUuid) {
     return await prisma.$transaction(async (tx) => {
         const userProjectRelation = await tx.projectUser.findUnique({
             where: {
                 // findUnique using compound keys
-                userId_projectId: {
+                userId_projectUuid: {
                     userId: userId,
-                    projectId: projectId,
+                    projectUuid: projectUuid,
                 },
             },
         });
@@ -61,11 +61,11 @@ export async function canUserCreateCategory(userId, projectId) {
     });
 }
 
-export async function getCategoryById(projectId, categoryId) {
+export async function getCategoryByUuid(projectUuid, categoryUuid) {
     return prisma.category.findUnique({
         where: {
-            id: categoryId,
-            projectId: projectId,
+            uuid: categoryUuid,
+            projectUuid: projectUuid,
         },
     });
 }

@@ -4,70 +4,56 @@ import { ApiError } from "#utils/api.error";
 import { ApiResponse } from "#utils/api.response";
 import * as featureServices from "#services/feature.services";
 import { isUserMemberOfProject } from "#services/project.users.services";
-import { getCategoryById } from "#services/category.services";
+import { getCategoryDetails } from "#api/categories/category.controller";
+import { getCategoryByUuid } from "#services/category.services";
 
 export async function createFeature(req, res) {
-    const {
-        featureName,
-        featureGitBranch,
-        featureAssignee,
-        featureDueDate,
-        featureDescription,
-        featureAcceptanceCriteria,
-        encodedFeatureParentId,
-        encodedCategoryId,
-    } = req.body;
+    const { name, gitBranch, assignee, dueDate, description, acceptanceCriteria, parentUuid, categoryUuid } = req.body;
 
-    if (!featureName || !encodedCategoryId)
+    if (!name || !categoryUuid)
         throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "Required fields for feature creation not provided");
 
-    const [categoryId] = sqids.decode(encodedCategoryId);
-    const [featureAssigneeId] = sqids.decode(featureAssignee);
-    const [featureParentId] = encodedFeatureParentId ? sqids.decode(encodedFeatureParentId) : [null];
+    const [assigneeId] = (assignee && sqids.decode(assignee)) || [null];
 
-    const alreadyExists = await featureServices.checkFeatureExistsForCategory(featureName, categoryId);
+    const alreadyExists = await featureServices.checkFeatureExistsForCategory(name, categoryUuid);
     if (alreadyExists)
         throw new ApiError(HTTP_RESPONSE_CODE.CONFLICT, "Feature with this name already exists in the given category");
 
     const feature = await featureServices.createFeature(
-        featureName,
-        featureGitBranch,
-        featureAssigneeId,
-        featureDueDate,
-        featureDescription,
-        featureAcceptanceCriteria,
-        categoryId,
-        featureParentId,
+        name,
+        gitBranch,
+        assigneeId,
+        dueDate,
+        description,
+        acceptanceCriteria,
+        categoryUuid,
+        parentUuid,
     );
 
     res.status(HTTP_RESPONSE_CODE.CREATED).json(
         new ApiResponse(HTTP_RESPONSE_CODE.CREATED, {
             featureName: feature.name,
-            featureId: sqids.encode([feature.id]),
-            categoryId: sqids.encode([feature.categoryId]),
+            featureUuid: feature.uuid,
+            categoryUuid: feature.categoryUuid,
         }),
     );
 }
 
 export async function getFeatureDetails(req, res) {
     const userId = req.userId;
-    const { encodedProjectId, encodedCategoryId, encodedFeatureId } = req.params;
+    const { projectUuid, categoryUuid, featureUuid } = req.params;
 
-    if (!encodedProjectId || !encodedCategoryId || !encodedFeatureId)
-        throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "projectId and (or) categoryId and (or) featureId not provided");
+    if (!projectUuid || !categoryUuid || !featureUuid)
+        throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "projectUuid and (or) categoryUuid and (or) featureUuid not provided");
 
-    const [projectId] = sqids.decode(encodedProjectId);
-    const [categoryId] = sqids.decode(encodedCategoryId);
-    const [featureId] = sqids.decode(encodedFeatureId);
-
-    const userBelongsToProject = await isUserMemberOfProject(projectId, userId);
+    const userBelongsToProject = await isUserMemberOfProject(projectUuid, userId);
     if (!userBelongsToProject)
         throw new ApiError(HTTP_RESPONSE_CODE.FORBIDDEN, "You can't access this feature as you are not a part of this project");
 
-    const categoryExists = await getCategoryById(projectId, categoryId);
+    const categoryExists = await getCategoryDetails(projectUuid, categoryUuid);
     if (!categoryExists) throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "Invalid categoryId provided");
 
-    const feature = await featureServices.getFeatureDetailsById(featureId, categoryId);
+    const feature = await featureServices.getFeatureDetailsById(featureUuid, categoryUuid);
 
     res.status(HTTP_RESPONSE_CODE.SUCCESS).json(
         new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS, {

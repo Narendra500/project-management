@@ -1,22 +1,22 @@
 import prisma from "#config/prisma.client";
 
-export async function updateFeatureDetails(featureId, updateData) {
+export async function updateFeatureDetails(featureUuid, updateData) {
     await prisma.featureDetail.update({
         where: {
-            featureId: featureId,
+            featureUuid: featureUuid,
         },
         data: updateData,
     });
 }
 
-export async function getFeatureDetailsById(featureId, categoryId) {
+export async function getFeatureDetailsById(featureUuid, categoryUuid) {
     return await prisma.feature.findUnique({
         where: {
-            id: featureId,
-            categoryId: categoryId,
+            uuid: featureUuid,
+            categoryUuid: categoryUuid,
         },
         include: {
-            featureDetails: {
+            details: {
                 select: {
                     description: true,
                     gitBranch: true,

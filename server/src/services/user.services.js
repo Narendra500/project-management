@@ -1,13 +1,13 @@
 import prisma from "#config/prisma.client";
 
-export async function updateUserActiveProject(userId, projectId) {
+export async function updateUserActiveProject(userId, projectUuid) {
     return await prisma.$transaction(async (tx) => {
         // check if user is part of the project
         // no need to check is project is being set as inactive., therefore null
-        if (projectId) {
+        if (projectUuid) {
             const userProject = await tx.project.findUnique({
                 where: {
-                    id: projectId,
+                    uuid: projectUuid,
                     projectUsers: {
                         some: {
                             userId: userId,
@@ -25,7 +25,7 @@ export async function updateUserActiveProject(userId, projectId) {
                 id: userId,
             },
             data: {
-                activeProjectId: projectId,
+                activeProjectUuid: projectUuid,
             },
         });
 

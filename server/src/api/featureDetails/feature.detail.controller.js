@@ -6,10 +6,10 @@ import { ApiResponse } from "#utils/api.response";
 import { FeatureStatus } from "@prisma/client";
 import { FeaturePriority } from "@prisma/client";
 import { isUserMemberOfProject } from "#services/project.users.services";
-import { getCategoryById } from "#services/category.services";
+import { getCategoryByUuid } from "#services/category.services";
 
 export async function updateFeatureDetails(req, res) {
-    const { encodedFeatureId } = req.params;
+    const { featureUuid } = req.params;
     const updateData = req.body;
 
     if (updateData.status && !(updateData.status in FeatureStatus)) {
@@ -23,9 +23,7 @@ export async function updateFeatureDetails(req, res) {
         });
     }
 
-    const [featureId] = sqids.decode(encodedFeatureId);
-
-    await featureDetailServices.updateFeatureDetails(featureId, updateData);
+    await featureDetailServices.updateFeatureDetails(featureUuid, updateData);
 
     res.status(HTTP_RESPONSE_CODE.SUCCESS).json(
         new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS, {}, "Feature deatils updated successfuly"),
@@ -34,33 +32,29 @@ export async function updateFeatureDetails(req, res) {
 
 export async function getFeatureDetails(req, res) {
     const userId = req.userId;
-    const { encodedProjectId, encodedCategoryId, encodedFeatureId } = req.params;
+    const { projectUuid, categoryUuid, featureUuid } = req.params;
 
-    if (!encodedProjectId || !encodedCategoryId || !encodedFeatureId)
-        throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "projectId and (or) categoryId and (or) featureId not provided");
+    if (!projectUuid || !categoryUuid || !featureUuid)
+        throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "projectUuid and (or) categoryUuid and (or) featureUuid not provided");
 
-    const [projectId] = sqids.decode(encodedProjectId);
-    const [categoryId] = sqids.decode(encodedCategoryId);
-    const [featureId] = sqids.decode(encodedFeatureId);
-
-    const userBelongsToProject = await isUserMemberOfProject(projectId, userId);
+    const userBelongsToProject = await isUserMemberOfProject(projectUuid, userId);
     if (!userBelongsToProject)
         throw new ApiError(HTTP_RESPONSE_CODE.FORBIDDEN, "You can't access this feature as you are not a part of this project");
 
-    const categoryExists = await getCategoryById(projectId, categoryId);
+    const categoryExists = await getCategoryByUuid(projectUuid, categoryUuid);
     if (!categoryExists) throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "Invalid categoryId provided");
 
-    const feature = await featureDetailServices.getFeatureDetailsById(featureId, categoryId);
+    const feature = await featureDetailServices.getFeatureDetailsById(featureUuid, categoryUuid);
 
     res.status(HTTP_RESPONSE_CODE.SUCCESS).json(
         new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS, {
             name: feature.name,
-            description: feature.featureDetails.description,
-            assignee: feature.featureDetails.assignee,
-            gitBranch: feature.featureDetails.gitBranch,
-            dueDate: feature.featureDetails.dueDate,
-            status: feature.featureDetails.status,
-            acceptanceCriteria: feature.featureDetails.acceptanceCriteria,
+            description: feature.details.description,
+            assignee: feature.details.assignee,
+            gitBranch: feature.details.gitBranch,
+            dueDate: feature.details.dueDate,
+            status: feature.details.status,
+            acceptanceCriteria: feature.details.acceptanceCriteria,
         }),
         "feature details retrieved successfully",
     );

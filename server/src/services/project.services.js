@@ -1,9 +1,9 @@
 import prisma from "#config/prisma.client";
 
-export async function getAllProjectCategoriesAndFeatures(projectId, userId) {
+export async function getAllNotDeletedProjectCategoriesAndFeatures(projectUuid, userId) {
     return await prisma.project.findUnique({
         where: {
-            id: projectId,
+            uuid: projectUuid,
             projectUsers: {
                 some: {
                     userId: userId,
@@ -11,20 +11,23 @@ export async function getAllProjectCategoriesAndFeatures(projectId, userId) {
             },
         },
         select: {
-            id: true,
+            uuid: true,
             name: true,
+            isDeleted: false,
             categories: {
                 select: {
-                    id: true,
+                    uuid: true,
                     name: true,
                     color: true,
-                    parentId: true,
+                    parentUuid: true,
+                    isDeleted: false,
                     features: {
                         select: {
-                            id: true,
+                            uuid: true,
                             name: true,
-                            parentId: true,
-                            categoryId: true,
+                            parentUuid: true,
+                            categoryUuid: true,
+                            isDeleted: false,
                         },
                     },
                 },
@@ -65,7 +68,7 @@ export async function createProjectForUser(createrUserId, projectName, projectDe
         const managerRole = await tx.projectRole.create({
             data: {
                 name: "Manager",
-                projectId: project.id, // use the id from the project created by above query
+                projectUuid: project.uuid, // use the uuid from the project created by above query
                 deletePermission: true,
                 writePermission: true,
             },
@@ -74,7 +77,7 @@ export async function createProjectForUser(createrUserId, projectName, projectDe
         await tx.projectUser.create({
             data: {
                 userId: createrUserId,
-                projectId: project.id,
+                projectUuid: project.uuid,
                 roleId: managerRole.id, // assign manager role to the creator of the project
             },
         });
@@ -112,4 +115,42 @@ export async function getProjectsByUserId(userId) {
     }));
 
     return projectsWithRoles;
+}
+
+export async function getAllSoftDeletedProjectNodes(projectUuid, userId) {
+    return await prisma.$transaction(async (tx) => {
+        const softDeletedCategories = await tx.category.findMany({
+            where: {
+                parentUuid: projectUuid,
+                isDeleted: true,
+                // atleast one userId's of the projectUsers match the userId of the user requesting the data
+                projects: {
+                    projectUsers: {
+                        some: {
+                            userId: userId,
+                        },
+                    },
+                },
+            },
+        });
+
+        const softDeletedFeatures = await tx.feature.findMany({
+            where: {
+                category: {
+                    projectUuid: projectUuid,
+                    // atleast one userId's of the projectUsers match the userId of the user requesting the data
+                    project: {
+                        projectUsers: {
+                            some: {
+                                userId: userId,
+                            },
+                        },
+                    },
+                },
+                isDeleted: true,
+            },
+        });
+
+        return { softDeletedCategories, softDeletedFeatures };
+    });
 }

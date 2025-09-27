@@ -2,7 +2,6 @@ import { ApiError } from "#utils/api.error";
 import { ApiResponse } from "#utils/api.response";
 import * as projectServices from "#services/project.services";
 import { HTTP_RESPONSE_CODE } from "#constants/api.response.codes";
-import sqids from "#config/sqids";
 
 export async function createProject(req, res) {
     // userId is put into the req by the authMiddleware
@@ -21,8 +20,6 @@ export async function createProject(req, res) {
     // project is returned if all queries were successfull
     if (!project) throw new ApiError(HTTP_RESPONSE_CODE.SERVER_ERROR, "Internal server error, project not created");
 
-    project.id = sqids.encode([project.id]);
-
     res.status(HTTP_RESPONSE_CODE.CREATED).json(
         new ApiResponse(HTTP_RESPONSE_CODE.CREATED, project, "Project created successfuly"),
     );
@@ -37,8 +34,7 @@ export async function getUserProjects(req, res) {
         new ApiResponse(
             HTTP_RESPONSE_CODE.SUCCESS,
             projects.map((project) => ({
-                ...project, // spread the object
-                id: sqids.encode([project.id]), // override the original id with encoded id
+                ...project,
             })),
         ),
     );
@@ -46,21 +42,25 @@ export async function getUserProjects(req, res) {
 
 export async function getAllProjectCategoriesAndFeatures(req, res) {
     const userId = req.userId;
-    const projectId = sqids.decode(req.params.projectId)[0];
+    const { projectUuid } = req.params;
 
-    const projectData = await projectServices.getAllProjectCategoriesAndFeatures(projectId, userId);
+    if (!projectUuid) throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "project uuid not provided");
+
+    const projectData = await projectServices.getAllNotDeletedProjectCategoriesAndFeatures(projectUuid, userId);
     if (!projectData) throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "project with given id doesn't exist for user");
 
-    projectData.id = sqids.encode([projectData.id]);
-    for (const category of projectData?.categories) {
-        category.id = sqids.encode([category.id]);
-        if (category.parentId) category.parentId = sqids.encode([category.parentId]);
-
-        for (const feature of category?.features) {
-            feature.id = sqids.encode([feature.id]);
-            if (feature.parentId) feature.parentId = sqids.encode([feature.parentId]);
-        }
-    }
-
     res.status(HTTP_RESPONSE_CODE.SUCCESS).json(new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS, { projectData }));
+}
+
+export async function getAllSoftDeletedProjectNodes(req, res) {
+    const userId = req.userId;
+    const { projectUuid } = req.params;
+
+    if (!projectUuid) throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "Project uuid required to get soft deleted nodes");
+
+    const softDeletedProjectNodes = await projectServices.getAllSoftDeletedProjectNodes(projectUuid);
+
+    res.status(HTTP_RESPONSE_CODE.SUCCESS).json(
+        new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS, { softDeletedProjectNodes }, "soft deleted nodes retrieved successfully"),
+    );
 }
