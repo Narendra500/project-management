@@ -7,7 +7,9 @@ import { convertToTree, TREE_NODE_TYPES, TREE_NODE_TEXT_COLORS, TREE_NODE_EXPANS
 function TreeNodeComponent({ node, updateNode, navigate }) {
     return (
         <div className="font-mono">
-            <div className="text-xl hover:cursor-default inline-block">{node.name}</div>
+            <Link to={`node/${node.uuid}/view-project-details`} className="text-xl hover:cursor-pointer hover:text-amber-100 inline-block">
+                {node.name}
+            </Link>
             <button onClick={() => { navigate(`node/${node.uuid}/add-new-category`) }}
                 className="ml-4 font-bold text-gray-600 hover:text-gray-500 text-md border-1 px-2 pl-4 rounded-sm border-gray-800 hover:cursor-pointer hover:border-gray-500">Add</button>
             {node.children.map((child, index) => (
@@ -89,8 +91,9 @@ export async function loader({ params }) {
 
 export default function TreeViewComponent() {
     const navigate = useNavigate();
+    const [filter, setFilter] = useState(localStorage.getItem("projectFilter") || "noFilter");
     const projectTree = useLoaderData();
-    const [treeData, setTreeData] = useState(convertToTree(projectTree));
+    const [treeData, setTreeData] = useState(convertToTree(projectTree, filter));
 
     function updateNode(node, field, value) {
         if (!node) return;
@@ -113,12 +116,32 @@ export default function TreeViewComponent() {
             <div className="text-5xl">Looks like you haven't set any project as active yet!</div> <Link to="/project/user/me" className="mt-10 text-2xl text-purple-700 underline" replace>Click here to go to projects section</Link> </div>
     )
 
+    function handleFilterChange(e) {
+        localStorage.setItem("projectFilter", e.target.value);
+        setFilter(e.target.value);
+        console.log(filter);
+        const temp = { ...treeData };
+        setTreeData(temp);
+    }
+
     return (
         <TreeContext.Provider value={[treeData, setTreeData]}>
             <Outlet />
             <div className="h-full scroller-x-slim scroller-slim bg-gray-950 text-gray-400 pl-6 py-6">
+                <div className="flex justify-center">
+                    <div className="text-2xl">Filter:</div>
+                    <select className="ml-4 p-1 border-2 border-purple-200 rounded-md hover:cursor-pointer"
+                        onChange={handleFilterChange}
+                    >
+                        <option className="bg-gray-800" value=""></option>
+                        <option className="bg-gray-800" value="noFilter">No filter</option>
+                        <option className="bg-gray-800" value="open">Open</option>
+                        <option className="bg-gray-800" value="inWork">In work</option>
+                        <option className="bg-gray-800" value="done">Done</option>
+                    </select>
+                </div>
                 <TreeNodeComponent node={treeData.projectNode} updateNode={updateNode} navigate={navigate} />
             </div>
-        </TreeContext.Provider>
+        </TreeContext.Provider >
     );
 }

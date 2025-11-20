@@ -19,6 +19,17 @@ export async function checkIfUserExists(userName) {
     });
 }
 
+export async function resetPassword(userName, newHashedPassword) {
+    await prisma.user.update({
+        data: {
+            hashedPassword: newHashedPassword,
+        },
+        where: {
+            userName: userName,
+        },
+    });
+}
+
 export async function addUserEmailVerificationToken(userId, token, expiresAt) {
     return await prisma.userEmailVerificationToken.create({
         data: {

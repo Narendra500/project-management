@@ -18,6 +18,7 @@ import { PopUpMedium } from "#components/ui/PopUpMedium";
 import EmailVerificationComponent from "#components/auth/EmailVerificationComponent";
 import CategoryDetails from "#components/nodeDetails/CategoryDetails";
 import FeatureDetails from "#components/nodeDetails/FeatureDetails";
+import ProjectDetails from "#components/nodeDetails/ProjectDetails";
 
 import { loader as loadUserProjects } from "#components/mainContent/ProjectComponent";
 import { loader as loadUserDetails } from "./App.jsx";
@@ -62,6 +63,10 @@ const routes = [
                         element: <TreeViewComponent />,
                         loader: loadProjectData,
                         children: [
+                            {
+                                path: "node/:projectUuid/view-project-details",
+                                element: <PopUpMedium><ProjectDetails /></PopUpMedium>
+                            },
                             {
                                 path: "node/:nodeUuid/view-category-details",
                                 element: <PopUpMedium><CategoryDetails /></PopUpMedium>,

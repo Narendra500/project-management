@@ -10,12 +10,13 @@ export const TREE_NODE_EXPANSION_STATES = Object.freeze({
 });
 
 export class TreeNode {
-    constructor(uuid, name, parentNode, upperLayerParNode, treeNodeExpansionState, treeNodeType, color) {
+    constructor(uuid, name, parentNode, upperLayerParNode, treeNodeExpansionState, treeNodeStatus, treeNodeType, color) {
         this.uuid = uuid;
         this.name = name;
         this.parentNode = parentNode;
         this.upperLayerParNode = upperLayerParNode;
         this.expansionState = treeNodeExpansionState;
+        this.status = treeNodeStatus;
         this.type = treeNodeType;
         this.color = color || "bg-white";
         this.children = [];
@@ -42,7 +43,7 @@ export const TREE_NODE_TEXT_COLORS = Object.freeze({
     purple: "text-purple-700",
 });
 
-export function convertToTree(projectData) {
+export function convertToTree(projectData, filter) {
     // map to access nodes by id
     if (!projectData) return null;
 
@@ -50,14 +51,18 @@ export function convertToTree(projectData) {
     const projectExpansionStateString = localStorage.getItem(`project-${projectData.uuid}-expansionState`);
     const projectExpansionStateJson = JSON.parse(projectExpansionStateString);
     // root node
-    const projectNode = new TreeNode(
-        projectData.uuid,
-        projectData.name,
-        null,
-        null,
-        TREE_NODE_EXPANSION_STATES.expanded,
-        TREE_NODE_TYPES.projectNode,
-    );
+    const projectNode = {
+        uuid: projectData.uuid,
+        name: projectData.name,
+        description: projectData.description,
+        users: projectData.users,
+        parentNode: projectData.parentNode,
+        upperLayerParNode: projectData.upperLayerParNode,
+        expansionState: projectData.treeNodeExpansionState,
+        type: projectData.treeNodeType,
+        color: projectData.color || "bg-white",
+        children: [],
+    };
     map.set(projectData.uuid, projectNode);
 
     // create node and map them for each category of the project and each feature of a category.
@@ -68,6 +73,7 @@ export function convertToTree(projectData) {
             category.parentUuid,
             projectData.uuid,
             projectExpansionStateJson[category.uuid].expansionState || TREE_NODE_EXPANSION_STATES.expanded,
+            "category",
             TREE_NODE_TYPES.categoryNode,
             category.color,
         );
@@ -75,16 +81,19 @@ export function convertToTree(projectData) {
 
         // create feature nodes of the created category and map them
         for (const feature of category.features) {
-            const featureNode = new TreeNode(
-                feature.uuid,
-                feature.name,
-                feature.parentUuid,
-                category.uuid,
-                projectExpansionStateJson[category.uuid].features[feature.uuid] || TREE_NODE_EXPANSION_STATES.expanded,
-                TREE_NODE_TYPES.featureNode,
-                category.color,
-            );
-            map.set(feature.uuid, featureNode);
+            if (filter === "noFilter" || feature.status === filter) {
+                const featureNode = new TreeNode(
+                    feature.uuid,
+                    feature.name,
+                    feature.parentUuid,
+                    category.uuid,
+                    projectExpansionStateJson[category.uuid].features[feature.uuid] || TREE_NODE_EXPANSION_STATES.expanded,
+                    feature.status,
+                    TREE_NODE_TYPES.featureNode,
+                    category.color,
+                );
+                map.set(feature.uuid, featureNode);
+            }
         }
     }
 
@@ -101,10 +110,12 @@ export function convertToTree(projectData) {
 
         // connect all features of the current category to their parent feature/category
         for (const feature of category.features) {
-            const featureNode = map.get(feature.uuid);
-            // no parentUuid , current category is the parent
-            if (feature.parentUuid === null) categoryNode.children.push(featureNode);
-            else map.get(feature.parentUuid).children.push(featureNode);
+            if (filter === "noFilter" || feature.status === filter) {
+                const featureNode = map.get(feature.uuid);
+                // no parentUuid , current category is the parent
+                if (feature.parentUuid === null) categoryNode.children.push(featureNode);
+                else map.get(feature.parentUuid).children.push(featureNode);
+            }
         }
     }
 

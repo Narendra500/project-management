@@ -9,7 +9,7 @@ export default function NavButton(props) {
             onClick={() => navigate(props.navigateTo)}
             className={`flex items-center h-10 sm:h-16 justify-center border-2 border-purple-500 px-6 py-2 sm:px-8 sm:py-4 
                         text-sm lg:text-lg font-bold rounded-full hover:cursor-pointer hover:bg-gradient-to-r 
-                        from-purple-600 via-purple-500 to-red-400` + " " + props.extraClasses}
+                        from-purple-600 via-purple-500 to-purple-400` + " " + props.extraClasses}
         >
             {props.buttonText}
         </button>

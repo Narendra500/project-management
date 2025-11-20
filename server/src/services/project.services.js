@@ -14,6 +14,11 @@ export async function getAllNotDeletedProjectCategoriesAndFeatures(projectUuid, 
         select: {
             uuid: true,
             name: true,
+            users: {
+                select: {
+                    displayName: true,
+                },
+            },
             isDeleted: false,
             categories: {
                 select: {
@@ -29,6 +34,11 @@ export async function getAllNotDeletedProjectCategoriesAndFeatures(projectUuid, 
                             parentUuid: true,
                             categoryUuid: true,
                             isDeleted: false,
+                            details: {
+                                select: {
+                                    status: true,
+                                },
+                            },
                         },
                     },
                 },
@@ -126,7 +136,7 @@ export async function getAllSoftDeletedProjectNodes(projectUuid, userId) {
                 parentUuid: projectUuid,
                 isDeleted: true,
                 // atleast one userId's of the projectUsers match the userId of the user requesting the data
-                projects: {
+                project: {
                     projectUsers: {
                         some: {
                             userId: userId,

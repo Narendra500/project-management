@@ -36,18 +36,18 @@ export default function NavBar() {
                     {isMenuActive ? "Hide Menu" : "Show Menu"}
                 </button>
                 {/* navigation links */}
-                <Link to={`recycle-bin/${activeProjectUuid}`} className={navClass}>
-                    Recycle bin
-                </Link>
+                {/* <Link to={`recycle-bin/${activeProjectUuid}`} className={navClass}> */}
+                {/*     Recycle bin */}
+                {/* </Link> */}
                 <Link to="project/user/me" className={navClass}>
                     Projects
                 </Link>
                 <Link to={`tree-view/${activeProjectUuid}`} className={navClass}>
                     Tree View
                 </Link>
-                <Link to={`kanbhan/${activeProjectUuid}`} className={navClass}>
-                    Kanbhan
-                </Link>
+                {/* <Link to={`kanbhan/${activeProjectUuid}`} className={navClass}> */}
+                {/*     Kanbhan */}
+                {/* </Link> */}
                 <Link to="profile/me" className={navClass + " mr-[5%] ml-[5%]"}>
                     Profile
                 </Link>

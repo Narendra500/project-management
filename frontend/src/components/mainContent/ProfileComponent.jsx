@@ -48,7 +48,7 @@ export default function ProfileComponent() {
         <div className="h-full flex flex-col">
             <div className="grow scroller">
                 {getUserDetailsLeftSection(user.displayName, user.isVerified, navigate)}
-                {getUserDetailsRightSection()}
+                {/* {getUserDetailsRightSection()} */}
             </div>
             <Outlet />
         </div>

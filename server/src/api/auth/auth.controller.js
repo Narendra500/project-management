@@ -86,6 +86,15 @@ export async function login(req, res) {
         .json(new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS, { displayName: user.displayName }, "User logged in successfuly"));
 }
 
+export async function resetPassword(req, res) {
+    const { userName, newPassword } = req.body;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    await authServices.resetPassword(userName, hashedPassword);
+
+    res.status(HTTP_RESPONSE_CODE.SUCCESS).json(new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS));
+}
+
 export async function logout(req, res) {
     // must pass the same options (path, domain) that were used to set the cookie.
     // Since we only used the defaults, we just need httpOnly, secure, and sameSite.
