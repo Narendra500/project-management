@@ -1,5 +1,7 @@
 import { createId } from "@paralleldrive/cuid2";
 import prisma from "#config/prisma.client";
+import { ApiError } from "#utils/api.error";
+import { HTTP_RESPONSE_CODE } from "#constants/api.response.codes";
 
 export async function getAllNotDeletedProjectCategoriesAndFeatures(projectUuid, userId) {
     return await prisma.project.findUnique({
@@ -17,6 +19,7 @@ export async function getAllNotDeletedProjectCategoriesAndFeatures(projectUuid, 
             users: {
                 select: {
                     displayName: true,
+                    id: true,
                 },
             },
             isDeleted: false,
@@ -37,6 +40,8 @@ export async function getAllNotDeletedProjectCategoriesAndFeatures(projectUuid, 
                             details: {
                                 select: {
                                     status: true,
+                                    dueDate: true,
+                                    assigneeId: true,
                                 },
                             },
                         },
@@ -45,6 +50,52 @@ export async function getAllNotDeletedProjectCategoriesAndFeatures(projectUuid, 
             },
         },
     });
+}
+
+async function getUserProjectRole(userId, projectUuid) {
+    const record = await prisma.projectUser.findUnique({
+        where: {
+            userId_projectUuid: {
+                userId: userId,
+                projectUuid: projectUuid,
+            },
+        },
+        include: {
+            projectRoles: true,
+        },
+    });
+
+    return record?.projectRoles;
+}
+
+export async function softDeleteUserProject(userId, projectUuid) {
+    const role = await getUserProjectRole(userId, projectUuid);
+
+    if (!role || !role.deletePermission) {
+        throw new ApiError(HTTP_RESPONSE_CODE.UNAUTHORIZED, "Unauthorized: You do not have permission to delete this project");
+    }
+
+    const time = new Date();
+
+    await prisma.$queryRaw`
+        UPDATE projects
+        SET is_deleted = true, deleted_at = ${time}
+        WHERE project_uuid = ${projectUuid}
+    `;
+}
+
+export async function reverseSoftDeleteUserProject(userId, projectUuid) {
+    const role = await getUserProjectRole(userId, projectUuid);
+
+    if (!role || !role.deletePermission) {
+        throw new ApiError(HTTP_RESPONSE_CODE.UNAUTHORIZED, "Unauthorized: You do not have permission to restore this project");
+    }
+
+    await prisma.$queryRaw`
+        UPDATE projects
+        SET is_deleted = false, deleted_at = null
+        WHERE project_uuid = ${projectUuid}
+    `;
 }
 
 export async function checkProjectExistsForUser(projectName, userId) {

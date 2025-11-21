@@ -4,7 +4,6 @@ import { ApiError } from "#utils/api.error";
 import { ApiResponse } from "#utils/api.response";
 import * as featureServices from "#services/feature.services";
 import { isUserMemberOfProject } from "#services/project.users.services";
-import { getCategoryDetails } from "#api/categories/category.controller";
 import { getCategoryByUuid } from "#services/category.services";
 
 export async function createFeature(req, res) {
@@ -50,7 +49,7 @@ export async function getFeatureDetails(req, res) {
     if (!userBelongsToProject)
         throw new ApiError(HTTP_RESPONSE_CODE.FORBIDDEN, "You can't access this feature as you are not a part of this project");
 
-    const categoryExists = await getCategoryDetails(projectUuid, categoryUuid);
+    const categoryExists = await getCategoryByUuid(projectUuid, categoryUuid);
     if (!categoryExists) throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "Invalid categoryId provided");
 
     const feature = await featureServices.getFeatureDetailsById(featureUuid, categoryUuid);
@@ -66,5 +65,36 @@ export async function getFeatureDetails(req, res) {
             acceptanceCriteria: feature.featureDetails.acceptanceCriteria,
         }),
         "feature details retrieved successfully",
+    );
+}
+
+export async function updateFeatureDetails(req, res) {
+    const userId = req.userId;
+    const { projectUuid, categoryUuid, featureUuid, updatedFeatureDetails } = req.body;
+
+    if (!projectUuid || !categoryUuid || !featureUuid || !updatedFeatureDetails)
+        throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "projectUuid and (or) categoryUuid and (or) featureUuid not provided");
+
+    const userBelongsToProject = await isUserMemberOfProject(projectUuid, userId);
+    if (!userBelongsToProject)
+        throw new ApiError(HTTP_RESPONSE_CODE.FORBIDDEN, "You can't access this feature as you are not a part of this project");
+
+    const categoryExists = await getCategoryByUuid(projectUuid, categoryUuid);
+    if (!categoryExists) throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "Invalid categoryId provided");
+
+    if (updatedFeatureDetails.assigneeId) [updatedFeatureDetails.assigneeId] = sqids.decode(updatedFeatureDetails.assigneeId);
+    if (updatedFeatureDetails.dueDate) updatedFeatureDetails.dueDate = new Date(updatedFeatureDetails.dueDate).toISOString();
+    const feature = await featureServices.updateFeatureDetailsById(featureUuid, categoryUuid, updatedFeatureDetails);
+
+    res.status(HTTP_RESPONSE_CODE.SUCCESS).json(
+        new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS, {
+            description: feature.description,
+            assignee: feature.assignee,
+            gitBranch: feature.gitBranch,
+            dueDate: feature.dueDate,
+            status: feature.status,
+            acceptanceCriteria: feature.acceptanceCriteria,
+        }),
+        "feature details updated successfully",
     );
 }

@@ -37,3 +37,18 @@ export async function getFeatureDetails(projectUuid, categoryUuid, featureUuid) 
         return err.response.data || "Couldn't fetch feature details";
     }
 }
+
+export async function updateFeatureDetails(projectUuid, categoryUuid, featureUuid, updatedFeatureDetails) {
+    try {
+        const response = await apiClient.put(`/feature/update`, {
+            projectUuid: projectUuid,
+            categoryUuid: categoryUuid,
+            featureUuid: featureUuid,
+            updatedFeatureDetails: updatedFeatureDetails,
+        });
+
+        return response.data;
+    } catch (err) {
+        return err.response.data || "Couldn't update feature details";
+    }
+}

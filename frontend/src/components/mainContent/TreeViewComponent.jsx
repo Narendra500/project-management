@@ -3,6 +3,7 @@ import { useLoaderData, Outlet, useNavigate, Link } from "react-router";
 import { useState } from "react";
 import TreeContext from "#contexts/TreeContext";
 import { convertToTree, TREE_NODE_TYPES, TREE_NODE_TEXT_COLORS, TREE_NODE_EXPANSION_STATES } from "#utils/tree";
+import { useAppContext } from "#contexts/AppContext";
 
 function TreeNodeComponent({ node, updateNode, navigate }) {
     return (
@@ -91,9 +92,10 @@ export async function loader({ params }) {
 
 export default function TreeViewComponent() {
     const navigate = useNavigate();
+    const { user, setUser } = useAppContext();
     const [filter, setFilter] = useState(localStorage.getItem("projectFilter") || "noFilter");
     const projectTree = useLoaderData();
-    const [treeData, setTreeData] = useState(convertToTree(projectTree, filter));
+    const [treeData, setTreeData] = useState(convertToTree(projectTree, filter, user.id));
 
     function updateNode(node, field, value) {
         if (!node) return;
@@ -117,11 +119,12 @@ export default function TreeViewComponent() {
     )
 
     function handleFilterChange(e) {
-        localStorage.setItem("projectFilter", e.target.value);
-        setFilter(e.target.value);
-        console.log(filter);
-        const temp = { ...treeData };
-        setTreeData(temp);
+        const newFilterValue = e.target.value;
+        localStorage.setItem("projectFilter", newFilterValue);
+        setFilter(newFilterValue);
+
+        const newTreeData = convertToTree(projectTree, newFilterValue, user.id);
+        setTreeData(newTreeData);
     }
 
     return (
@@ -132,12 +135,13 @@ export default function TreeViewComponent() {
                     <div className="text-2xl">Filter:</div>
                     <select className="ml-4 p-1 border-2 border-purple-200 rounded-md hover:cursor-pointer"
                         onChange={handleFilterChange}
+                        value={filter} // Controlled component
                     >
-                        <option className="bg-gray-800" value=""></option>
                         <option className="bg-gray-800" value="noFilter">No filter</option>
                         <option className="bg-gray-800" value="open">Open</option>
                         <option className="bg-gray-800" value="inWork">In work</option>
                         <option className="bg-gray-800" value="done">Done</option>
+                        <option className="bg-gray-800" value="assigned-to-me">Assigned to me</option>
                     </select>
                 </div>
                 <TreeNodeComponent node={treeData.projectNode} updateNode={updateNode} navigate={navigate} />

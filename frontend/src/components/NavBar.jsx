@@ -39,6 +39,9 @@ export default function NavBar() {
                 {/* <Link to={`recycle-bin/${activeProjectUuid}`} className={navClass}> */}
                 {/*     Recycle bin */}
                 {/* </Link> */}
+                <Link to="project/deleted/user/me" className={navClass}>
+                    Deleted Projects
+                </Link>
                 <Link to="project/user/me" className={navClass}>
                     Projects
                 </Link>

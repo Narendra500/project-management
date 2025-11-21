@@ -4,6 +4,7 @@ import VerifyEmailPage from "#pages/VerifyEmailPage";
 import App from "./App";
 
 import ProjectComponent from "#components/mainContent/ProjectComponent";
+import DeletedProjectComponent from "#components/mainContent/DeletedProjectComponent";
 import KanBhanComponent from "#components/mainContent/KanbhanComponent";
 import TreeViewComponent from "#components/mainContent/TreeViewComponent";
 import ProfileComponent from "#components/mainContent/ProfileComponent";
@@ -55,6 +56,11 @@ const routes = [
                         element: <ProjectComponent />,
                         loader: loadUserProjects,
                         children: [{ path: "create-user-project", element: <PopUpMedium>{<ProjectForms.CreateUserProjectForm />}</PopUpMedium> }],
+                    },
+                    {
+                        path: "project/deleted/user/me",
+                        element: <DeletedProjectComponent />,
+                        loader: loadUserProjects,
                     },
                     { path: "kanbhan/:projectUuid", element: <KanBhanComponent /> },
                     { path: "recycle-bin/:projectUuid", element: <RecycleBin />, loader: loadSoftDeletedNodes },

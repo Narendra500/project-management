@@ -20,11 +20,7 @@ export async function getFeatureDetailsById(featureUuid, categoryUuid) {
                 select: {
                     description: true,
                     gitBranch: true,
-                    assignee: {
-                        select: {
-                            displayName: true,
-                        },
-                    },
+                    assignee: { select: { id: true, displayName: true } },
                     dueDate: true,
                     status: true,
                     acceptanceCriteria: true,

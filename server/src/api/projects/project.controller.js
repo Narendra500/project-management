@@ -1,5 +1,6 @@
 import { ApiError } from "#utils/api.error";
 import { ApiResponse } from "#utils/api.response";
+import sqids from "#config/sqids";
 import * as projectServices from "#services/project.services";
 import { HTTP_RESPONSE_CODE } from "#constants/api.response.codes";
 
@@ -40,6 +41,28 @@ export async function getUserProjects(req, res) {
     );
 }
 
+export async function softDeleteUserProject(req, res) {
+    const userId = req.userId;
+    const { projectUuid } = req.params;
+
+    if (!projectUuid) throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "project uuid not provided");
+
+    await projectServices.softDeleteUserProject(userId, projectUuid);
+
+    res.status(HTTP_RESPONSE_CODE.SUCCESS).json(new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS));
+}
+
+export async function reverseSoftDeleteUserProject(req, res) {
+    const userId = req.userId;
+    const { projectUuid } = req.params;
+
+    if (!projectUuid) throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "project uuid not provided");
+
+    await projectServices.reverseSoftDeleteUserProject(userId, projectUuid);
+
+    res.status(HTTP_RESPONSE_CODE.SUCCESS).json(new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS));
+}
+
 export async function getAllProjectCategoriesAndFeatures(req, res) {
     const userId = req.userId;
     const { projectUuid } = req.params;
@@ -48,6 +71,16 @@ export async function getAllProjectCategoriesAndFeatures(req, res) {
 
     const projectData = await projectServices.getAllNotDeletedProjectCategoriesAndFeatures(projectUuid, userId);
     if (!projectData) throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "project with given id doesn't exist for user");
+
+    for (let user of projectData.users) {
+        user.id = sqids.encode([user.id]);
+    }
+
+    for (let category of projectData.categories) {
+        for (let feature of category.features) {
+            if (feature.details.assigneeId) feature.details.assigneeId = sqids.encode([feature.details.assigneeId]);
+        }
+    }
 
     res.status(HTTP_RESPONSE_CODE.SUCCESS).json(new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS, { projectData }));
 }

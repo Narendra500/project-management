@@ -43,7 +43,7 @@ export const TREE_NODE_TEXT_COLORS = Object.freeze({
     purple: "text-purple-700",
 });
 
-export function convertToTree(projectData, filter) {
+export function convertToTree(projectData, filter, userId) {
     // map to access nodes by id
     if (!projectData) return null;
 
@@ -59,7 +59,7 @@ export function convertToTree(projectData, filter) {
         parentNode: projectData.parentNode,
         upperLayerParNode: projectData.upperLayerParNode,
         expansionState: projectData.treeNodeExpansionState,
-        type: projectData.treeNodeType,
+        type: TREE_NODE_TYPES.projectNode,
         color: projectData.color || "bg-white",
         children: [],
     };
@@ -81,14 +81,18 @@ export function convertToTree(projectData, filter) {
 
         // create feature nodes of the created category and map them
         for (const feature of category.features) {
-            if (filter === "noFilter" || feature.status === filter) {
+            if (
+                (filter === "assigned-to-me" && feature.details.assigneeId === userId) ||
+                filter === "noFilter" ||
+                feature.details.status === filter
+            ) {
                 const featureNode = new TreeNode(
                     feature.uuid,
                     feature.name,
                     feature.parentUuid,
                     category.uuid,
                     projectExpansionStateJson[category.uuid].features[feature.uuid] || TREE_NODE_EXPANSION_STATES.expanded,
-                    feature.status,
+                    feature.details.status,
                     TREE_NODE_TYPES.featureNode,
                     category.color,
                 );
@@ -110,14 +114,44 @@ export function convertToTree(projectData, filter) {
 
         // connect all features of the current category to their parent feature/category
         for (const feature of category.features) {
-            if (filter === "noFilter" || feature.status === filter) {
+            if (
+                (filter === "assigned-to-me" && feature.details.assigneeId === userId) ||
+                filter === "noFilter" ||
+                feature.details.status === filter
+            ) {
                 const featureNode = map.get(feature.uuid);
                 // no parentUuid , current category is the parent
                 if (feature.parentUuid === null) categoryNode.children.push(featureNode);
-                else map.get(feature.parentUuid).children.push(featureNode);
+                else if (map.get(feature.parentUuid)) {
+                    map.get(feature.parentUuid).children.push(featureNode);
+                }
             }
         }
     }
 
+    if (filter !== "noFilter") {
+        pruneEmptyNodes(projectNode);
+    }
+
     return { projectNode, map };
+}
+
+function pruneEmptyNodes(node) {
+    // Recursively filter children first (bottom-up approach)
+    if (node.children && node.children.length > 0) {
+        node.children = node.children.filter((child) => pruneEmptyNodes(child));
+    }
+
+    // Always keep the Project Node
+    if (node.type === TREE_NODE_TYPES.projectNode) return true;
+
+    // Always keep Feature Nodes (because they already passed the status filter in the loop above)
+    if (node.type === TREE_NODE_TYPES.featureNode) return true;
+
+    // Only keep Category Nodes if they still have children after the recursive filter
+    if (node.type === TREE_NODE_TYPES.categoryNode) {
+        return node.children.length > 0;
+    }
+
+    return false;
 }

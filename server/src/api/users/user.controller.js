@@ -29,6 +29,7 @@ export async function getUserDetails(req, res) {
 
     res.status(HTTP_RESPONSE_CODE.SUCCESS).json(
         new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS, {
+            id: sqids.encode([user.id]),
             displayName: user.displayName,
             isVerified: user.isVerified,
             activeProjectUuid: user.activeProjectUuid,

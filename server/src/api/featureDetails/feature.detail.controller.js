@@ -45,6 +45,7 @@ export async function getFeatureDetails(req, res) {
     if (!categoryExists) throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "Invalid categoryId provided");
 
     const feature = await featureDetailServices.getFeatureDetailsById(featureUuid, categoryUuid);
+    if (feature.details.assignee?.id) feature.details.assignee.id = sqids.encode([feature.details.assignee.id]);
 
     res.status(HTTP_RESPONSE_CODE.SUCCESS).json(
         new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS, {

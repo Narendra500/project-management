@@ -49,6 +49,15 @@ export async function createFeature(
     });
 }
 
+export async function updateFeatureDetailsById(featureUuid, categoryUuid, updateFeatureDetails) {
+    return await prisma.featureDetail.update({
+        where: {
+            featureUuid: featureUuid,
+        },
+        data: { ...updateFeatureDetails },
+    });
+}
+
 export async function getFeatureDetailsById(featureUuid, categoryUuid) {
     return await prisma.feature.findUnique({
         where: {
