@@ -21,3 +21,10 @@ export async function getProjectUsers(req, res) {
         new ApiResponse(HTTP_RESPONSE_CODE.SUCCESS, { projectUsers }, "users retrieved successfully"),
     );
 }
+
+export async function inviteUsers(req, res) {
+    const userId = req.userId;
+    const { projectUuid } = req.params;
+
+    if (!projectUuid) throw new ApiError(HTTP_RESPONSE_CODE.BAD_REQUEST, "Project uuid not provided");
+}

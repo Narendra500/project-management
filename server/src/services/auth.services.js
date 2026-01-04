@@ -20,12 +20,12 @@ export async function checkIfUserExists(userName) {
 }
 
 export async function resetPassword(userName, newHashedPassword) {
-    await prisma.user.update({
+    await prisma.user.updateMany({
         data: {
             hashedPassword: newHashedPassword,
         },
         where: {
-            userName: userName,
+            name: userName,
         },
     });
 }
