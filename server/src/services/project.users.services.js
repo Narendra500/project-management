@@ -1,4 +1,5 @@
 import prisma from "#config/prisma.client";
+import { createId } from "@paralleldrive/cuid2";
 
 export async function createProjectUserRelation(userId, projectUuid, roleId) {
     return await prisma.projectUser.create({
@@ -17,6 +18,39 @@ export async function isUserMemberOfProject(projectUuid, userId) {
             projectUuid: projectUuid,
         },
     });
+}
+
+export async function createProjectInvite(projectUuid, expiresAt) {
+    return await prisma.projectInvite.create({
+        data: {
+            projectUuid: projectUuid,
+            inviteCode: createId(),
+            expiresAt: expiresAt,
+        },
+    });
+}
+
+export async function getProjectUsersByEmails(projectUuid, userEmails) {
+    return await prisma.$queryRaw`
+        SELECT u.user_id, u.display_name, u.user_name 
+        FROM project_users pu
+        INNER JOIN users u ON pu.user_id = u.user_id
+        WHERE pu.project_uuid = ${projectUuid} AND u.user_name IN (${userEmails})
+    `;
+}
+
+export async function getProjectUser(projectUuid, requesterUserId, queriedUserId) {
+    const userBelongsToProject = await isUserMemberOfProject(projectUuid, requesterUserId);
+
+    if (!userBelongsToProject) return null;
+
+    return await prisma.$queryRaw`
+        SELECT u.user_id, u.display_name, pr.project_role_name AS role 
+        FROM project_users pu 
+        INNER JOIN users u ON pu.user_id = u.user_id
+        INNER JOIN project_roles pr ON pu.project_role_id = pr.project_role_id
+        WHERE pu.project_uuid = ${projectUuid} AND u.user_id = ${queriedUserId}
+    `;
 }
 
 export async function getProjectUsers(projectUuid, userId) {

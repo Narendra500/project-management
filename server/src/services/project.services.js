@@ -52,7 +52,15 @@ export async function getAllNotDeletedProjectCategoriesAndFeatures(projectUuid, 
     });
 }
 
-async function getUserProjectRole(userId, projectUuid) {
+export async function getProjectDetails(projectUuid) {
+    return await prisma.project.findFirst({
+        where: {
+            uuid: projectUuid,
+        },
+    });
+}
+
+export async function getUserProjectRole(userId, projectUuid) {
     const record = await prisma.projectUser.findUnique({
         where: {
             userId_projectUuid: {
