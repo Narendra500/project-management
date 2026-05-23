@@ -1,4 +1,5 @@
 import prisma from "#config/prisma.client";
+import { Prisma } from "@prisma/client";
 
 export async function updateUserActiveProject(userId, projectUuid) {
     return await prisma.$transaction(async (tx) => {
@@ -42,6 +43,14 @@ export async function updateUserDisplayName(userId, newDisplayName) {
             displayName: newDisplayName,
         },
     });
+}
+
+export async function getUsersByEmails(emails) {
+    return await prisma.$queryRaw`
+        SELECT u.user_id, u.display_name, u.user_name as email
+        FROM users u
+        WHERE u.user_name IN (${Prisma.join(emails, ",")})
+    `;
 }
 
 export async function getUserById(userId) {

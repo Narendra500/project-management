@@ -1,4 +1,5 @@
 import prisma from "#config/prisma.client";
+import { Prisma } from "@prisma/client";
 import { createId } from "@paralleldrive/cuid2";
 
 export async function createProjectUserRelation(userId, projectUuid, roleId) {
@@ -32,10 +33,10 @@ export async function createProjectInvite(projectUuid, expiresAt) {
 
 export async function getProjectUsersByEmails(projectUuid, userEmails) {
     return await prisma.$queryRaw`
-        SELECT u.user_id, u.display_name, u.user_name 
+        SELECT u.user_id, u.display_name, u.user_name as email
         FROM project_users pu
         INNER JOIN users u ON pu.user_id = u.user_id
-        WHERE pu.project_uuid = ${projectUuid} AND u.user_name IN (${userEmails})
+        WHERE pu.project_uuid = ${projectUuid} AND u.user_name IN (${Prisma.join(userEmails, ",")})
     `;
 }
 
@@ -44,13 +45,16 @@ export async function getProjectUser(projectUuid, requesterUserId, queriedUserId
 
     if (!userBelongsToProject) return null;
 
-    return await prisma.$queryRaw`
+    // Returns an array of users, but in this case we have only requested one user so we return the first element of the array.
+    const user_array = await prisma.$queryRaw`
         SELECT u.user_id, u.display_name, pr.project_role_name AS role 
         FROM project_users pu 
         INNER JOIN users u ON pu.user_id = u.user_id
         INNER JOIN project_roles pr ON pu.project_role_id = pr.project_role_id
         WHERE pu.project_uuid = ${projectUuid} AND u.user_id = ${queriedUserId}
     `;
+
+    return user_array[0];
 }
 
 export async function getProjectUsers(projectUuid, userId) {
@@ -59,7 +63,7 @@ export async function getProjectUsers(projectUuid, userId) {
     if (!userBelongsToProject) return null;
 
     return await prisma.$queryRaw`
-        SELECT u.user_id, u.display_name, pr.project_role_name AS role 
+        SELECT u.user_id, u.display_name, u.user_name as email, pr.project_role_name AS role 
         FROM project_users pu
         INNER JOIN users u ON pu.user_id = u.user_id
         INNER JOIN project_roles pr ON pu.project_role_id = pr.project_role_id

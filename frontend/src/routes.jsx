@@ -70,6 +70,10 @@ const routes = [
                         loader: loadProjectData,
                         children: [
                             {
+                                path: "node/:projectUuid/invite-users",
+                                element: <PopUpSmall><ProjectForms.InviteUsersForm /></PopUpSmall>
+                            },
+                            {
                                 path: "node/:projectUuid/view-project-details",
                                 element: <PopUpMedium><ProjectDetails /></PopUpMedium>
                             },

@@ -1,5 +1,17 @@
 import apiClient from "#config/api";
 
+export async function inviteUsers(projectUuid, emails) {
+    try {
+        const response = await apiClient.post(`/projectUsers/${projectUuid}/invite-users`, {
+            userEmails: emails,
+        });
+
+        return response.data;
+    } catch (err) {
+        return err.response.data || "couldn't invite users";
+    }
+}
+
 export async function createUserProject(projectName, projectDescription) {
     try {
         const response = await apiClient.post("/project/create", {

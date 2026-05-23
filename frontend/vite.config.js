@@ -5,6 +5,14 @@ import path from "path";
 
 export default defineConfig({
     plugins: [react(), tailwindcss()],
+    server: {
+        port: 5173,
+        host: true,
+        watch: {
+            usePolling: true,
+            interval: 300,
+        },
+    },
     resolve: {
         alias: {
             "#config": path.resolve(__dirname, "./src/config"),

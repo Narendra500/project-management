@@ -7,6 +7,9 @@ services:
       - "5173:5173"
     depends_on:
       - server
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
   server:
     build: ./server
     container_name: server
@@ -15,6 +18,10 @@ services:
       - "8080:8080"
     depends_on:
       - postgres
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+
   postgres:
     image: postgis/postgis:17-3.5
     container_name: postgres
