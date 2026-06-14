@@ -37,7 +37,7 @@ export default function ProjectDetails() {
                 <div className="flex flex-col justify-center h-16 rounded-md text-gray-200 text-xl text-center bg-gray-700">{projectDetails.name}</div>
                 <div className="text-2xl mt-4 text-gray-300">Project description:</div>
                 <div className="h-100 whitespace-pre-wrap mb-6 bg-gray-700 p-4 text-xl text-gray-200 rounded-md scroller-slim">
-                    {projectDetails.description || "Category description not provided"}
+                    {projectDetails.description || "Project description not provided"}
                 </div>
                 <div className="flex justify-baseline mb-4 items-center">
                     <div className="text-2xl mt-4 text-gray-300 inline">Project Roles:</div>
@@ -65,7 +65,7 @@ export default function ProjectDetails() {
                     <div className="text-2xl mt-4 text-gray-300 inline">Project members:</div>
                     <button className="button-square-small ml-6 inline" onClick={handleAddMember}>Add</button>
                 </div>
-                {projectDetails.users?.map(user => <div key={`${user.name}`} className="flex flex-col justify-center h-12 rounded-md text-gray-200 text-xl pl-4 bg-gray-900">{user.displayName} ({user.name})</div>)}
+                {projectDetails.users?.map(user => <div key={`${user.name}`} className="flex flex-col my-2 justify-center h-12 rounded-md text-gray-200 text-xl pl-4 bg-gray-900">{user.displayName} ({user.name})</div>)}
             </div>
         </div>
     );
