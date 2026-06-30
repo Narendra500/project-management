@@ -14,6 +14,7 @@ export async function getAllNotDeletedProjectCategoriesAndFeatures(projectUuid, 
             },
         },
         select: {
+            projectVersion: true,
             uuid: true,
             name: true,
             projectRoles: {
@@ -176,7 +177,7 @@ export async function getProjectsByUserId(userId) {
         },
         include: {
             project: true, // Include the full project object
-            projectRoles: true, // Include the full role object
+            projectRole: true, // Include the full role object
         },
     });
 
@@ -190,7 +191,7 @@ export async function getProjectsByUserId(userId) {
         // Spread all the project details (id, name, description, etc.)
         ...membership.project,
         // Add a 'role' property with the role name
-        role: membership.projectRoles.name,
+        role: membership.projectRole.name,
     }));
 
     return projectsWithRoles;

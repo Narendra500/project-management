@@ -5,5 +5,6 @@ const router = Router();
 
 router.post("/create", featureController.createFeature);
 router.put("/update", featureController.updateFeatureDetails);
+router.get("/:featureUuid", featureController.getFeatureDetails);
 
 export default router;

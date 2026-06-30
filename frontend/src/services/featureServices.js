@@ -28,9 +28,9 @@ export async function createFeature(
     }
 }
 
-export async function getFeatureDetails(projectUuid, categoryUuid, featureUuid) {
+export async function getFeatureDetails(featureUuid) {
     try {
-        const response = await apiClient.get(`/featureDetail/${projectUuid}/${categoryUuid}/${featureUuid}`);
+        const response = await apiClient.get(`/feature/${featureUuid}`);
 
         return response.data;
     } catch (err) {
@@ -38,11 +38,9 @@ export async function getFeatureDetails(projectUuid, categoryUuid, featureUuid) 
     }
 }
 
-export async function updateFeatureDetails(projectUuid, categoryUuid, featureUuid, updatedFeatureDetails) {
+export async function updateFeatureDetails(featureUuid, updatedFeatureDetails) {
     try {
         const response = await apiClient.put(`/feature/update`, {
-            projectUuid: projectUuid,
-            categoryUuid: categoryUuid,
             featureUuid: featureUuid,
             updatedFeatureDetails: updatedFeatureDetails,
         });

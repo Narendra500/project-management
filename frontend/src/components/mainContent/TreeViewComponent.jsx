@@ -4,6 +4,7 @@ import { useState } from "react";
 import TreeContext from "#contexts/TreeContext";
 import { convertToTree, TREE_NODE_TYPES, TREE_NODE_TEXT_COLORS, TREE_NODE_EXPANSION_STATES } from "#utils/tree";
 import { useAppContext } from "#contexts/AppContext";
+import { registerProjectUpdateListeners } from "#services/socketio";
 
 function TreeNodeComponent({ node, updateNode, navigate }) {
     return (
@@ -33,7 +34,7 @@ function RecursiveNode({ node, isLast, prefix, color, updateNode, navigate }) {
     const line = '─';
     return (
         < div className="whitespace-pre-wrap" >
-            <div className="inline-block text-4xl">{prefix}{connector}{line}</div>
+            <div className="inline-block text-4xl color">{prefix}{connector}{line}</div>
             <Link
                 to=
                 {
@@ -58,7 +59,7 @@ function RecursiveNode({ node, isLast, prefix, color, updateNode, navigate }) {
                     )
                 )}
                     className="ml-4 text-gray-300 text-md border-1 px-2 pl-4 rounded-sm border-gray-800 hover:cursor-pointer hover:border-gray-500">
-                    {node.expansionState === TREE_NODE_EXPANSION_STATES.expanded ? "-" : "+"}
+                    {node.expansionState === TREE_NODE_EXPANSION_STATES.expanded ? "^" : "v"}
                 </button>
             }
             <button onClick={() => navigate(`node/${node.uuid}/add-new-feature`)}
@@ -71,7 +72,7 @@ function RecursiveNode({ node, isLast, prefix, color, updateNode, navigate }) {
                         node={child}
                         isLast={index === node.children.length - 1}
                         prefix={prefix + (isLast ? '   ' : '│  ')}
-                        color={child.type === TREE_NODE_TYPES.categoryNode ? child.color : node.color}
+                        color={child.type === TREE_NODE_TYPES.categoryNode ? child.color : color}
                         updateNode={updateNode}
                         navigate={navigate}
                     />
@@ -96,6 +97,8 @@ export default function TreeViewComponent() {
     const [filter, setFilter] = useState(localStorage.getItem("projectFilter") || "noFilter");
     const projectTree = useLoaderData();
     const [treeData, setTreeData] = useState(convertToTree(projectTree, filter, user.id));
+    // Real time tree data update using socket io.
+    registerProjectUpdateListeners(treeData, setTreeData);
 
     function updateNode(node, field, value) {
         if (!node) return;

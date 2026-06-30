@@ -1,15 +1,19 @@
 import express from "express";
+import http from "http";
 import cookieParser from "cookie-parser";
 import apiRouter from "#api/index";
 import errorHandler from "#middlewares/error.middleware";
 import dotenv from "dotenv";
 import cors from "cors";
 import { HTTP_RESPONSE_CODE } from "#constants/api.response.codes";
+import { initSocket } from "#socket/index";
 
 dotenv.config();
 
 const PORT = process.env.PORT;
 const app = express();
+const server = http.createServer(app);
+initSocket(server);
 
 // middleware for cross origin requests
 const whitelist = ["http://localhost:5173"];
@@ -42,6 +46,6 @@ app.all("/{*splat}", function (req, res) {
 // mount the error handler at last, this allows errorHandler to catch all error from everything defined before it
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server has started on port: ${PORT}`);
 });

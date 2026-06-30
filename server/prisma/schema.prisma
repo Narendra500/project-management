@@ -63,7 +63,7 @@ model Feature {
     categoryUuid  String?        @map("category_uuid") @db.VarChar(48)
     parentUuid    String?        @map("feature_parent_uuid") @db.VarChar(48)
     details       FeatureDetail?
-    categories    Category?      @relation(fields: [categoryUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+    category      Category?      @relation(fields: [categoryUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
     parentFeature Feature?       @relation("featuresTofeatures", fields: [parentUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
     childFeatures Feature[]      @relation("featuresTofeatures")
 
@@ -119,6 +119,7 @@ model projectUser {
 }
 
 model Project {
+    projectVersion Int             @map("project_version")
     name           String          @map("project_name") @db.VarChar(128)
     description    String?         @map("project_description")
     isDeleted      Boolean         @default(false) @map("is_deleted")

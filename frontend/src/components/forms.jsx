@@ -10,6 +10,7 @@ import NavButton from "#components/ui/NavButton";
 import { useAppContext } from "#contexts/AppContext";
 import { useProjectsContext } from "#contexts/ProjectsContext";
 import ActionButton from "./ui/ActionButton";
+import { disconnectSocket } from "#services/socketio";
 
 
 export function AuthForm() {
@@ -222,7 +223,11 @@ export function LogOutConfirmation() {
     const navigate = useNavigate();
     const handleLogout = async () => {
         const response = await authServices.logout();
-        if (response.success) navigate('/auth/login')
+        if (response.success) {
+            // Disconnect web sockets connection on logout.
+            disconnectSocket();
+            navigate('/auth/login')
+        }
     }
     return (
         <div className="flex w-full h-full flex-col items-center justify-center">

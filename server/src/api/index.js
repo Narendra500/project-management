@@ -7,7 +7,6 @@ import projectRoleRoutes from "#api/projectRoles/project.role.routes";
 import projectUserRoutes from "#api/projectUsers/project.users.routes";
 import categoryRoutes from "#api/categories/category.routes";
 import featureRoutes from "#api/features/feature.routes";
-import featureDetailRoutes from "#api/featureDetails/feature.detail.routes";
 
 const router = Router();
 
@@ -19,6 +18,5 @@ router.use("/projectRole", authMiddleware, projectRoleRoutes);
 router.use("/projectUsers/", authMiddleware, projectUserRoutes);
 router.use("/category", authMiddleware, categoryRoutes);
 router.use("/feature", authMiddleware, featureRoutes);
-router.use("/featureDetail", authMiddleware, featureDetailRoutes);
 
 export default router;
