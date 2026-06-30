@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import AppContext from "#contexts/AppContext";
 import { getUserDetails } from "#services/profileServices";
 import NavBar from "#components/NavBar";
+import { connectSocket } from "#services/socketio";
 
 export async function loader() {
     const response = await getUserDetails();
@@ -13,6 +14,8 @@ export async function loader() {
 function App() {
     const initialUserData = useLoaderData();
     const [user, setUser] = useState(initialUserData);
+    // Connect to server for real time updates.
+    connectSocket();
 
     // memoize the context to avoid unnecessary rerenders of child components in case other state variables unrelated to user change.
     const contextValue = useMemo(() => ({

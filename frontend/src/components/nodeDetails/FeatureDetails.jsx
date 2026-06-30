@@ -6,112 +6,222 @@ import { updateFeatureDetails } from "#services/featureServices";
 
 export default function FeatureDetails() {
     const feature = usePopUpContext();
-    const projectUuid = useLocation().pathname.split("/")[2];
-    const categoryUuid = useLocation().pathname.split("/")[4];
-    const featureUuid = useLocation().pathname.split("/")[5];
-    const [projectData, setProjectData] = useTreeContext();
-    const [requestToDeleteFeature, setRequestToDeleteFeature] = useState(false);
-    const [status, setStatus] = useState(feature.status);
-    const [assignee, setAssignee] = useState(feature.assignee?.id || "");
-    const [dueDate, setDueDate] = useState(feature.dueDate?.split("T")[0] || "");
-    const [gitBranch, setGitBranch] = useState(feature.gitBranch || "");
-    const [description, setDescription] = useState(feature.description || "");
-    const [acceptanceCriteria, setAcceptanceCriteria] = useState(feature.acceptanceCriteria || "");
+    const [projectData, _] = useTreeContext();
+    const [editMode, setEditMode] = useState(false);
+
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
+    const [input, setInput] = useState({
+        name: feature.name,
+        status: feature.status || "",
+        assignee: feature.assignee?.id || "",
+        dueDate: feature.dueDate?.split("T")[0] || "",
+        gitBranch: feature.gitBranch || "",
+        description: feature.description || "",
+        acceptanceCriteria: feature.acceptanceCriteria || "",
+    });
 
     const handleUpdateFeatureDetails = async () => {
+        setError(null);
+        setSuccess(null);
         const updatedFeatureDetails = {
-            status: status || feature.status,
-            assigneeId: assignee || feature.assignee.id,
-            dueDate: dueDate || null,
-            gitBranch: gitBranch.trim(),
-            description: description.trim(),
-            acceptanceCriteria: acceptanceCriteria.trim(),
+            name: input.name,
+            status: input.status,
+            assigneeId: input.assignee,
+            dueDate: input.dueDate || null,
+            gitBranch: input.gitBranch.trim(),
+            description: input.description.trim(),
+            acceptanceCriteria: input.acceptanceCriteria.trim(),
         };
 
-        await updateFeatureDetails(projectUuid, categoryUuid, featureUuid, updatedFeatureDetails);
+        const response = await updateFeatureDetails(feature.uuid, updatedFeatureDetails);
+        if (response.success) {
+            const data = response.data;
+            // Update the local version of the feature context in case the user wants to edit again.   
+            feature.name = data.name;
+            feature.status = data.status;
+            feature.dueDate = data.dueDate;
+            feature.gitBranch = data.gitBranch;
+            feature.description = data.description;
+            feature.acceptanceCriteria = data.acceptanceCriteria;
+            feature.assignee = data.assignee;
+
+            setSuccess(response.message);
+            setEditMode(false);
+        } else {
+            setError(response.message);
+        }
+    }
+
+    const handleInput = (e) => {
+        const field = e.target.name;
+        const value = e.target.value;
+        setInput((prev) => ({ ...prev, [field]: value }));
+    }
+
+    const cancelEditMode = () => {
+        // Revert input values to original state
+        setInput({
+            name: feature.name,
+            status: feature.status || "",
+            assignee: feature.assignee?.id || "",
+            dueDate: feature.dueDate?.split("T")[0] || "",
+            gitBranch: feature.gitBranch || "",
+            description: feature.description || "",
+            acceptanceCriteria: feature.acceptanceCriteria || "",
+        });
+        setError(null);
+        setSuccess(null);
+        setEditMode(false);
     }
 
     return (
-        <div className="h-9/12 w-full text-gray-300">
-            <div className="text-center text-2xl font-bold">Feature Details</div>
-            <div className="px-26">
-                <div className="text-xl">Feature name:</div>
-                <div className="flex flex-col justify-center h-16 rounded-md text-gray-200 text-center text-xl px-4 bg-gray-700 border-2 border-gray-400">{feature.name}</div>
+        <div className="h-9/12 w-full text-gray-300 relative">
+            <div className="text-red-300 mt-2 text-center">{error}</div>
+            <div className="text-green-300 mt-2 text-center">{success}</div>
+
+            {/* Header with Edit/Save Toggle */}
+            <div className="flex items-center mb-4 px-26">
+                <div className="text-2xl font-bold">Feature Details</div>
+                <div className="grow flex justify-end">
+                    <button
+                        onClick={editMode ? handleUpdateFeatureDetails : () => setEditMode(true)}
+                        className="button-update px-4 py-1 text-white rounded-md"
+                    >
+                        {editMode ? "Save" : "Edit"}
+                    </button>
+                    {editMode && (
+                        <button
+                            onClick={cancelEditMode}
+                            className="button-cancel ml-6 px-4 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-500"
+                        >
+                            Cancel
+                        </button>
+                    )}
+                </div>
             </div>
 
-            <div className="h-full w-full px-26 scroller-slim">
+            <div className="px-26">
+                <div className="text-xl">Feature name:</div>
+                {editMode ? (
+                    <input
+                        type="text"
+                        name="name"
+                        value={input.name}
+                        onChange={handleInput}
+                        className="flex items-center h-12 rounded-md font-mono text-gray-100 text-lg px-4 bg-gray-600 outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                        placeholder="Enter feature name"
+                    />
+                ) : (
+                    <div className="flex flex-col justify-center h-16 rounded-md text-gray-200 text-center text-xl px-4 bg-gray-700 border-2 border-gray-400">
+                        {feature.name}
+                    </div>)}
+            </div>
+
+            <div className="h-[80%] w-full px-26 scroller-slim mt-4">
                 {/* Metadata Grid (Status, Assignee, Due Date) */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 text-center">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    {/* Status */}
                     <div>
-                        <div className="text-xl text-gray-400">Status</div>
-                        <div className="p-2 rounded-md bg-gray-700 text-lg">{feature.status || 'Not set'}
-                            <select className="ml-4 border-1 border-purple-200 rounded-md" onChange={(e) => { setStatus(e.target.value) }}>
-                                <option name="status" className="bg-gray-800" value="">Change</option>
-                                <option name="status" className="bg-gray-800" value="open">Open</option>
-                                <option className="bg-gray-800" value="inWork">In Work</option>
-                                <option className="bg-gray-800" value="done">Done</option>
-                            </select>
+                        <div className="text-xl text-gray-400 mb-1">Status</div>
+                        <div className="h-12 flex items-center justify-center p-2 rounded-md bg-gray-700 text-lg">
+                            {editMode ? (
+                                <select name="status" value={input.status} onChange={handleInput} className="w-full bg-gray-800 border border-purple-200 rounded-md p-1 outline-none text-center">
+                                    <option value="">Change Status</option>
+                                    <option value="open">Open</option>
+                                    <option value="inWork">In Work</option>
+                                    <option value="done">Done</option>
+                                </select>
+                            ) : (
+                                feature.status || 'Not set'
+                            )}
                         </div>
                     </div>
+
+                    {/* Assignee */}
                     <div>
-                        <div className="text-xl text-gray-400">Assignee</div>
-                        <div className="p-2 rounded-md bg-gray-700 text-lg">{feature.assignee?.displayName || 'Unassigned'}
-                            <select className="ml-4 border-1 border-purple-200 rounded-md" onChange={(e) => { setAssignee(e.target.value) }}>
-                                <option value="">Change</option>
-                                {projectData.projectNode.users.map(user => <option className="bg-gray-800" value={user.id}>{user.displayName}</option>)}
-                            </select>
+                        <div className="text-xl text-gray-400 mb-1">Assignee</div>
+                        <div className="h-12 flex items-center justify-center p-2 rounded-md bg-gray-700 text-lg">
+                            {editMode ? (
+                                <select name="assignee" value={input.assignee} onChange={handleInput} className="w-full bg-gray-800 border border-purple-200 rounded-md p-1 outline-none text-center">
+                                    <option value="">Unassigned</option>
+                                    {projectData.projectNode.users.map(user => (
+                                        <option key={user.id} value={user.id}>{user.displayName}</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                feature.assignee?.displayName || 'Unassigned'
+                            )}
                         </div>
                     </div>
+
+                    {/* Due Date */}
                     <div>
-                        <div className="text-xl text-gray-400">
-                            Due Date
+                        <div className="text-xl text-gray-400 mb-1">Due Date</div>
+                        <div className="h-12 flex items-center justify-center p-2 rounded-md bg-gray-700 text-lg">
+                            {editMode ? (
+                                <input
+                                    type="date"
+                                    name="dueDate"
+                                    value={input.dueDate}
+                                    onChange={handleInput}
+                                    className="w-full bg-gray-800 border border-purple-200 rounded-md p-1 outline-none text-center"
+                                />
+                            ) : (
+                                feature.dueDate?.split('T')[0] || 'Not set'
+                            )}
                         </div>
-                        {/* split the date from the timezone, eg: 2025-06-19T00:00:000Z to 2025-06-19 */}
-                        <div className="p-2 rounded-md bg-gray-700 text-lg">{feature.dueDate?.split('T')[0] || 'Not set'}</div>
-                        <input type="date" onChange={(e) => setDueDate(e.target.value)}></input>
                     </div>
                 </div>
 
-                <div className="text-xl mt-4">Git Branch:</div>
-                <textarea onChange={(e) => setGitBranch(e.target.value)} className="flex items-center h-12 rounded-md font-mono text-gray-100 text-lg px-4 bg-gray-700 w-full"
-                    defaultValue={`${feature.gitBranch ? feature.gitBranch : 'No gitBranch provided.'}`}
-                ></textarea>
-
-                <div className="text-xl mt-4">Description:</div>
-                <textarea className="h-5/12 whitespace-pre-wrap w-full bg-gray-700 p-4 text-xl rounded-md scroller-slim"
-                    onChange={(e) => setDescription(e.target.value)}
-                    defaultValue={`${feature.description ? feature.description : 'No description provided.'}`}
-                >
-                </textarea>
-
-                <div className="text-xl mt-4">Acceptance Criteria:</div>
-                <textarea className="h-5/12  w-full whitespace-pre-wrap bg-gray-700 p-4 text-xl rounded-md scroller-slim"
-                    onChange={(e) => setAcceptanceCriteria(e.target.value)}
-                    defaultValue={`${feature.acceptanceCriteria ? feature.acceptanceCriteria : 'No acceptance criteria provided.'}`}
-                >
-                </textarea>
-
-                <button className="mx-auto button-update" onClick={handleUpdateFeatureDetails}>
-                    Update feature
-                </button>
-                {
-                    !requestToDeleteFeature &&
-                    <button className="button-delete m-auto" onClick={() => setRequestToDeleteFeature(true)}>
-                        Delete feature
-                    </button>}
-
-                {
-                    requestToDeleteFeature &&
-                    <div>
-                        <div className="text-red-500 text-xl text-center mt-6">Are you sure you want to delete this feature?</div>
-                        <div className="text-xl mt-3">Enter the name: <span className="bg-gray-950 px-3 font-mono">{feature.name}</span> to delete the feature.</div>
-                        <input className="input-delete"></input>
-                        <div>
-                            <button className="button-delete">Delete</button>
-                            <button className="button">Don't delete</button>
-                        </div>
+                {/* Git Branch */}
+                <div className="text-xl mt-6 mb-1">Git Branch:</div>
+                {editMode ? (
+                    <input
+                        type="text"
+                        name="gitBranch"
+                        value={input.gitBranch}
+                        onChange={handleInput}
+                        className="flex items-center h-12 rounded-md font-mono text-gray-100 text-lg px-4 bg-gray-600 outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                        placeholder="Enter git branch"
+                    />
+                ) : (
+                    <div className="flex items-center h-12 rounded-md font-mono text-gray-100 text-lg px-4 bg-gray-700 w-full">
+                        {feature.gitBranch || 'No gitBranch provided.'}
                     </div>
-                }
+                )}
+
+                {/* Description */}
+                <div className="text-xl mt-6 mb-1">Description:</div>
+                {editMode ? (
+                    <textarea
+                        name="description"
+                        value={input.description}
+                        onChange={handleInput}
+                        className="min-h-[150px] w-full resize-y bg-gray-600 p-4 text-xl rounded-md outline-none focus:ring-2 focus:ring-blue-500 scroller-slim"
+                        placeholder="Enter description..."
+                    />
+                ) : (
+                    <div className="min-h-[150px] whitespace-pre-wrap w-full bg-gray-700 p-4 text-xl rounded-md scroller-slim">
+                        {feature.description || 'No description provided.'}
+                    </div>
+                )}
+
+                {/* Acceptance Criteria */}
+                <div className="text-xl mt-6 mb-1">Acceptance Criteria:</div>
+                {editMode ? (
+                    <textarea
+                        name="acceptanceCriteria"
+                        value={input.acceptanceCriteria}
+                        onChange={handleInput}
+                        className="min-h-[150px] w-full resize-y bg-gray-600 p-4 text-xl rounded-md outline-none focus:ring-2 focus:ring-blue-500 scroller-slim mb-8"
+                        placeholder="Enter acceptance criteria..."
+                    />
+                ) : (
+                    <div className="min-h-[150px] w-full whitespace-pre-wrap bg-gray-700 p-4 text-xl rounded-md scroller-slim mb-8">
+                        {feature.acceptanceCriteria || 'No acceptance criteria provided.'}
+                    </div>
+                )}
             </div>
         </div>
     );

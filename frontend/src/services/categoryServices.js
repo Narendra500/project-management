@@ -27,3 +27,20 @@ export async function getCategoryDetails(projectUuid, categoryUuid) {
         return err.response.data || "Couldn't load category details";
     }
 }
+
+export async function updateCategoryDetails(projectUuid, categoryUuid, categoryName, categoryDescription, categoryColor, colorMode) {
+    try {
+        const response = await apiClient.post("category/update", {
+            projectUuid,
+            categoryUuid,
+            categoryName,
+            categoryDescription,
+            categoryColor,
+            colorMode,
+        });
+
+        return response.data;
+    } catch (err) {
+        return err.response.data || "Couldn't edit category details";
+    }
+}

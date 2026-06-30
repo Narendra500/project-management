@@ -22,6 +22,7 @@ export async function createFeature(
     featureAcceptanceCriteria,
     categoryUuid,
     featureParentUuid,
+    projectUuid,
 ) {
     return await prisma.$transaction(async (tx) => {
         const feature = await tx.feature.create({
@@ -45,27 +46,54 @@ export async function createFeature(
             },
         });
 
-        return feature;
+        const project = await tx.project.update({
+            where: {
+                uuid: projectUuid,
+            },
+            data: { projectVersion: { increment: 1 } },
+        });
+
+        return [feature, project];
     });
 }
 
-export async function updateFeatureDetailsById(featureUuid, categoryUuid, updateFeatureDetails) {
-    return await prisma.featureDetail.update({
-        where: {
-            featureUuid: featureUuid,
-        },
-        data: { ...updateFeatureDetails },
-    });
+export async function updateFeatureDetailsById(featureUuid, projectUuid, updatedFeatureDetails) {
+    // remove name field from updatedFeatureDetails object as only features table has it.
+    const { name, ...cleanUpdatedFeatureDetails } = updatedFeatureDetails;
+    return await prisma.$transaction([
+        prisma.feature.update({
+            where: {
+                uuid: featureUuid,
+            },
+            data: { name: name },
+        }),
+        prisma.featureDetail.update({
+            where: {
+                featureUuid: featureUuid,
+            },
+            data: cleanUpdatedFeatureDetails,
+            include: {
+                assignee: {
+                    select: { id: true, displayName: true },
+                },
+            },
+        }),
+        prisma.project.update({
+            where: {
+                uuid: projectUuid,
+            },
+            data: { projectVersion: { increment: 1 } },
+        }),
+    ]);
 }
 
-export async function getFeatureDetailsById(featureUuid, categoryUuid) {
+export async function getFeatureDetailsById(featureUuid) {
     return await prisma.feature.findUnique({
         where: {
             uuid: featureUuid,
-            categoryUuid: categoryUuid,
         },
         include: {
-            featureDetails: {
+            details: {
                 select: {
                     description: true,
                     gitBranch: true,
@@ -75,6 +103,7 @@ export async function getFeatureDetailsById(featureUuid, categoryUuid) {
                     acceptanceCriteria: true,
                 },
             },
+            category: { select: { projectUuid: true } },
         },
     });
 }

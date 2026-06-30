@@ -1,3 +1,14 @@
+import { updateLocalStorageTreeExpansionState } from "./treeExpansionStateHelper";
+
+export const TREE_UPDATE_TYPES = Object.freeze({
+    ADD_CATEGORY: "add_category",
+    UPDATE_CATEGORY: "update_category",
+    DELETE_CATEGORY: "delete_category",
+    ADD_FEATURE: "add_feature",
+    UPDATE_FEATURE: "update_feature",
+    DELETE_FEATURE: "delete_feature",
+});
+
 export const TREE_NODE_TYPES = Object.freeze({
     projectNode: "projectNode",
     categoryNode: "categoryNode",
@@ -10,7 +21,7 @@ export const TREE_NODE_EXPANSION_STATES = Object.freeze({
 });
 
 export class TreeNode {
-    constructor(uuid, name, parentNode, upperLayerParNode, treeNodeExpansionState, treeNodeStatus, treeNodeType, color) {
+    constructor(uuid, name, parentNode, upperLayerParNode, treeNodeExpansionState, treeNodeType, color, treeNodeStatus) {
         this.uuid = uuid;
         this.name = name;
         this.parentNode = parentNode;
@@ -43,14 +54,8 @@ export const TREE_NODE_TEXT_COLORS = Object.freeze({
     purple: "text-purple-700",
 });
 
-export function convertToTree(projectData, filter, userId) {
-    if (!projectData) return null;
-
-    // map to access nodes by id
-    const map = new Map();
+function createLocalExpansionStateTree(projectData) {
     let projectExpansionStateString = localStorage.getItem(`project-${projectData.uuid}-expansionState`);
-
-    // For shared projects the new user won't have the state saved locally on their machines.
     if (!projectExpansionStateString) {
         const tempProjectExpansionStateJson = {};
         for (const category of projectData.categories) {
@@ -62,9 +67,28 @@ export function convertToTree(projectData, filter, userId) {
             }
         }
         const tempProjectExpansionStateString = JSON.stringify(tempProjectExpansionStateJson);
-        localStorage.setItem(`project-${projectData.uuid}-expansionState`, tempProjectExpansionStateString);
-        projectExpansionStateString = tempProjectExpansionStateString;
+        setProjectExpansionState(projectData.uuid, tempProjectExpansionStateString);
     }
+}
+
+function setProjectExpansionState(projectUuid, projectExpansionStateString) {
+    localStorage.setItem(`project-${projectUuid}-expansionState`, projectExpansionStateString);
+}
+
+function getProjectExpansionState(projectUuid) {
+    return localStorage.getItem(`project-${projectUuid}-expansionState`);
+}
+
+export function convertToTree(projectData, filter, userId) {
+    if (!projectData) return null;
+
+    // map to access nodes by id
+    const map = new Map();
+
+    // For shared projects the new user won't have the state saved locally on their machines.
+    createLocalExpansionStateTree(projectData);
+    const projectExpansionStateString = getProjectExpansionState(projectData.uuid);
+
     const projectExpansionStateJson = JSON.parse(projectExpansionStateString);
     // root node
     const projectNode = {
@@ -89,7 +113,6 @@ export function convertToTree(projectData, filter, userId) {
             category.parentUuid,
             projectData.uuid,
             projectExpansionStateJson[category.uuid].expansionState || TREE_NODE_EXPANSION_STATES.expanded,
-            "category",
             TREE_NODE_TYPES.categoryNode,
             category.color,
         );
@@ -108,9 +131,9 @@ export function convertToTree(projectData, filter, userId) {
                     feature.parentUuid,
                     category.uuid,
                     projectExpansionStateJson[category.uuid].features[feature.uuid] || TREE_NODE_EXPANSION_STATES.expanded,
-                    feature.details.status,
                     TREE_NODE_TYPES.featureNode,
-                    category.color,
+                    feature.parentNode?.color || category.color,
+                    feature.details.status,
                 );
                 map.set(feature.uuid, featureNode);
             }
@@ -137,8 +160,9 @@ export function convertToTree(projectData, filter, userId) {
             ) {
                 const featureNode = map.get(feature.uuid);
                 // no parentUuid , current category is the parent
-                if (feature.parentUuid === null) categoryNode.children.push(featureNode);
-                else if (map.get(feature.parentUuid)) {
+                if (feature.parentUuid === null) {
+                    categoryNode.children.push(featureNode);
+                } else if (map.get(feature.parentUuid)) {
                     map.get(feature.parentUuid).children.push(featureNode);
                 }
             }
@@ -170,4 +194,85 @@ function pruneEmptyNodes(node) {
     }
 
     return false;
+}
+
+export function updateTree(updateType, treeData, setTreeData, data) {
+    if (treeData.projectNode.uuid === data.projectUuid) {
+        const projectMap = treeData.map;
+        // Default values
+        let childNode = null;
+
+        switch (updateType) {
+            case TREE_UPDATE_TYPES.ADD_CATEGORY:
+                if (projectMap.get(data.categoryUuid)) {
+                    return;
+                }
+
+                childNode = new TreeNode(
+                    data.categoryUuid,
+                    data.categoryName,
+                    data.categoryParentUuid,
+                    data.projectUuid,
+                    TREE_NODE_EXPANSION_STATES.expanded,
+                    TREE_NODE_TYPES.categoryNode,
+                    data.categoryColor,
+                );
+                break;
+            case TREE_UPDATE_TYPES.ADD_FEATURE:
+                if (projectMap.get(data.featureUuid)) {
+                    return;
+                }
+
+                childNode = new TreeNode(
+                    data.featureUuid,
+                    data.featureName,
+                    data.featureParentUuid,
+                    data.categoryUuid,
+                    TREE_NODE_EXPANSION_STATES.expanded,
+                    TREE_NODE_TYPES.featureNode,
+                    "", // feature color is derived from category color, don't need to store separately
+                    "open", // status
+                );
+                break;
+            case TREE_UPDATE_TYPES.UPDATE_CATEGORY:
+                if (!projectMap.get(data.categoryUuid)) {
+                    return;
+                }
+                const node = projectMap.get(data.categoryUuid);
+                node.name = data.categoryName;
+                node.color = data.categoryColor;
+
+                if (data.updatedSubCategoryUuids && Array.isArray(data.updatedSubCategoryUuids)) {
+                    data.updatedSubCategoryUuids.forEach((uuid) => {
+                        const subNode = projectMap.get(uuid);
+                        if (subNode) {
+                            subNode.color = data.categoryColor;
+                        }
+                    });
+                }
+                break;
+        }
+
+        if (isAddOrDeleteUpdate(updateType)) {
+            updateLocalStorageTreeExpansionState(updateType, data);
+            if (!childNode.parentNode) {
+                projectMap.get(childNode.upperLayerParNode).children.push(childNode);
+            } else {
+                projectMap.get(childNode.parentNode).children.push(childNode);
+            }
+            projectMap.set(childNode.uuid, childNode);
+        }
+
+        // Changes root node so that react rerenders the TreeViewComponent.
+        const temp = { ...treeData };
+        setTreeData(temp);
+    }
+}
+
+function isAddOrDeleteUpdate(updateType) {
+    return updateType === TREE_UPDATE_TYPES.ADD_CATEGORY || updateType === TREE_UPDATE_TYPES.ADD_FEATURE;
+}
+
+function isModifyUpdate(updateType) {
+    return updateType === TREE_UPDATE_TYPES.UPDATE_CATEGORY || updateType === TREE_UPDATE_TYPES.UPDATE_FEATURE;
 }

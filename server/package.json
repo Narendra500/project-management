@@ -22,12 +22,12 @@
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "nodemailer": "^7.0.5",
+    "nodemailer": "^9.0.1",
     "pino": "^9.7.0",
+    "socket.io": "^4.8.3",
     "sqids": "^0.3.0"
   },
   "devDependencies": {
-    "i": "^0.3.7",
     "nodemon": "^3.1.11",
     "npm": "^11.5.2",
     "pino-pretty": "^13.1.1",
@@ -39,6 +39,7 @@
     "#middlewares/*": "./src/middlewares/*.js",
     "#utils/*": "./src/utils/*.js",
     "#config/*": "./src/config/*.js",
-    "#constants/*": "./src/constants/*.js"
+    "#constants/*": "./src/constants/*.js",
+    "#socket/*": "./src/socket/*.js"
   }
 }

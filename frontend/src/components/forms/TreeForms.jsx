@@ -8,7 +8,7 @@ import { TreeNode, TREE_NODE_BACKGROUND_COLORS, TREE_NODE_TYPES, TREE_NODE_EXPAN
 import LongInput from "#components/ui/LongInput";
 import { usePopUpContext } from "#contexts/PopUpContext";
 
-function getButtonWithColor(name, color, isSelected, handleColorChange) {
+export function getButtonWithColor(name, color, isSelected, handleColorChange) {
     return (
         <button key={color} type="button" className={`transition-transform delay-100 mx-2 md:mx-4 mt-2 h-12 w-20 ${color} rounded-md hover:cursor-pointer border-3 ${isSelected ? color === "bg-white" ? "border-blue-500 -translate-y-1" : "border-white -translate-y-1" : "border-gray-800"}`} onClick={() => handleColorChange(name)}>
         </button>
@@ -55,29 +55,6 @@ export function CreateCategory() {
         );
 
         if (response.success) {
-            const projectExpansionStateString = localStorage.getItem(`project-${projectUuid}-expansionState`);
-            const projectExpansionStateJson = JSON.parse(projectExpansionStateString);
-
-            projectExpansionStateJson[response.data.categoryUuid] = {
-                expansionState: TREE_NODE_EXPANSION_STATES.expanded,
-                features: {}
-            };
-            localStorage.setItem(`project-${projectUuid}-expansionState`, JSON.stringify(projectExpansionStateJson));
-
-            const childNode = new TreeNode(
-                response.data.categoryUuid,
-                response.data.categoryName,
-                parNodeUuid,
-                projectUuid,
-                TREE_NODE_EXPANSION_STATES.expanded,
-                TREE_NODE_TYPES.categoryNode,
-                response.data.color
-            );
-            parNode.children.push(childNode);
-            treeData.map.set(childNode.uuid, childNode);
-
-            const temp = { ...treeData };
-            setTreeData(temp);
             navigate(`/tree-view/${projectUuid}`);
         }
     }
@@ -175,28 +152,6 @@ export function CreateFeature() {
         );
 
         if (response.success) {
-            const projectExpansionStateString = localStorage.getItem(`project-${projectUuid}-expansionState`);
-            const projectExpansionStateJson = JSON.parse(projectExpansionStateString);
-
-            projectExpansionStateJson[categoryUuid].features[response.data.featureUuid] = TREE_NODE_EXPANSION_STATES.expanded;
-
-            localStorage.setItem(`project-${projectUuid}-expansionState`, JSON.stringify(projectExpansionStateJson));
-
-            const createdNode = new TreeNode(
-                response.data.featureUuid,
-                response.data.featureName,
-                parNodeUuid,
-                categoryUuid,
-                TREE_NODE_EXPANSION_STATES.expanded,
-                TREE_NODE_TYPES.featureNode,
-                "" // feature color is derived from category color, don't need to store separately
-            );
-
-            parNode.children.push(createdNode);
-            treeData.map.set(response.data.featureUuid, createdNode);
-
-            const temp = { ...treeData };
-            setTreeData(temp);
             navigate(`/tree-view/${projectUuid}`);
         }
     }
